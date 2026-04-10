@@ -1,25 +1,31 @@
-# Simple Student Billing System
+# EduBill Pro - Top-Tier Improved Demo
 
-This is a simple web-based billing system demo built with HTML, CSS, and JavaScript.
+A polished browser-based student billing system demo.
 
-## Main Features
-- Student registration and record update
-- Fees invoicing
-- Payment receipting
-- Clearance status checking
-- Dashboard summaries
-- Basic reports
-- CSV export for students and payments
+## Demo Login
+- Username: `admin`
+- Password: `admin123`
+
+## Improvements Included
+- Login screen
+- Student management with profile view
+- Invoicing with printable invoice preview
+- Payment receipting with printable receipt preview
+- Clearance tracking with printable clearance letter
+- Student statement generation
+- Dashboard analytics with collections chart
+- Institution settings / branding
+- CSV export for students, invoices and payments
+- JSON backup and restore
+- Local browser storage (no server required)
 
 ## How to Use
 1. Extract the zip file.
 2. Open `index.html` in your browser.
-3. Start by adding students.
-4. Create invoices for students.
-5. Record payments.
-6. Check clearance and reports.
+3. Sign in with the demo credentials above.
+4. Optionally click **Load Sample Data** to see a populated demo.
 
 ## Notes
-- This version stores data in the browser using Local Storage.
-- It is ideal for demonstration, prototyping, or a simple offline-ready setup.
-- For production use, this can later be upgraded to connect to a real database and login system.
+- This is a front-end demo only.
+- Data is stored in your browser using localStorage.
+- For production use, connect it to a backend/database and proper authentication.

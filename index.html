@@ -3,34 +3,77 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Simple Student Billing System</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <title>EduBill Pro | Student Billing System</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <div class="app-shell">
-    <aside class="sidebar">
-      <div class="brand">
-        <div class="brand-icon">₿</div>
+  <div id="authScreen" class="auth-screen">
+    <div class="auth-card">
+      <div class="auth-brand">
+        <div class="auth-logo">E</div>
         <div>
-          <h1>Billing System</h1>
-          <p>Web Based</p>
+          <h1>EduBill Pro</h1>
+          <p>Student billing, receipting, clearance and reporting.</p>
         </div>
       </div>
 
-      <nav class="nav">
-        <button class="nav-link active" data-section="dashboard">Dashboard</button>
-        <button class="nav-link" data-section="students">Students</button>
-        <button class="nav-link" data-section="invoices">Invoicing</button>
-        <button class="nav-link" data-section="payments">Receipting</button>
-        <button class="nav-link" data-section="clearance">Clearance</button>
-        <button class="nav-link" data-section="reports">Reports</button>
-      </nav>
+      <div class="auth-highlight">
+        <div>
+          <strong>Top-tier demo improvements</strong>
+          <span>Login, printable documents, statement generation, analytics, settings and polished UI.</span>
+        </div>
+      </div>
 
-      <div class="sidebar-footer">
-        <p>Simple demo system for fees invoicing, receipting and reporting.</p>
+      <form id="loginForm" class="auth-form">
+        <div>
+          <label>Username</label>
+          <input type="text" id="loginUsername" placeholder="admin" required />
+        </div>
+        <div>
+          <label>Password</label>
+          <input type="password" id="loginPassword" placeholder="admin123" required />
+        </div>
+        <button class="btn primary full-width" type="submit">Sign In</button>
+      </form>
+
+      <div class="demo-credentials">
+        <span>Demo login</span>
+        <strong>admin / admin123</strong>
+      </div>
+    </div>
+  </div>
+
+  <div id="appShell" class="app-shell hidden">
+    <aside class="sidebar">
+      <div>
+        <div class="brand">
+          <div class="brand-mark">E</div>
+          <div>
+            <h1 id="brandSchoolName">EduBill Pro</h1>
+            <p id="brandTerm">Current Term</p>
+          </div>
+        </div>
+
+        <nav class="nav">
+          <button class="nav-link active" data-section="dashboard">Dashboard</button>
+          <button class="nav-link" data-section="students">Students</button>
+          <button class="nav-link" data-section="invoices">Invoicing</button>
+          <button class="nav-link" data-section="payments">Receipting</button>
+          <button class="nav-link" data-section="clearance">Clearance</button>
+          <button class="nav-link" data-section="reports">Reports</button>
+          <button class="nav-link" data-section="settings">Settings</button>
+        </nav>
+      </div>
+
+      <div class="sidebar-bottom">
+        <div class="mini-card">
+          <span>Signed in as</span>
+          <strong id="signedInUser">Administrator</strong>
+        </div>
+        <div class="sidebar-actions">
+          <button class="btn secondary full-width" id="loadSampleBtn">Load Sample Data</button>
+          <button class="btn ghost full-width" id="logoutBtn">Logout</button>
+        </div>
       </div>
     </aside>
 
@@ -38,72 +81,122 @@
       <header class="topbar">
         <div>
           <h2 id="pageTitle">Dashboard</h2>
-          <p class="muted">Manage student billing records in one place.</p>
+          <p class="muted" id="pageSubtitle">A polished web-based billing demo ready for use and customization.</p>
         </div>
-        <div class="actions-row">
-          <button class="btn secondary" id="seedDataBtn">Load Sample Data</button>
-          <button class="btn danger" id="resetDataBtn">Reset Data</button>
+        <div class="topbar-actions">
+          <div class="search-chip">
+            <span>Live data</span>
+            <strong id="lastSavedLabel">Not saved yet</strong>
+          </div>
+          <button class="btn secondary" id="backupBtn">Export Backup</button>
+          <label class="btn ghost upload-btn">
+            Import Backup
+            <input type="file" id="importBackupInput" accept="application/json" hidden />
+          </label>
+          <button class="btn danger" id="resetBtn">Reset</button>
         </div>
       </header>
 
       <section id="dashboard" class="section active">
         <div class="stats-grid">
-          <div class="stat-card">
+          <article class="stat-card accent-blue">
             <span>Total Students</span>
             <h3 id="statStudents">0</h3>
-          </div>
-          <div class="stat-card">
-            <span>Total Invoices</span>
-            <h3 id="statInvoices">0</h3>
-          </div>
-          <div class="stat-card">
-            <span>Total Payments</span>
-            <h3 id="statPayments">KES 0.00</h3>
-          </div>
-          <div class="stat-card">
-            <span>Outstanding Balance</span>
+            <small>Registered records</small>
+          </article>
+          <article class="stat-card accent-cyan">
+            <span>Total Invoiced</span>
+            <h3 id="statInvoiced">KES 0.00</h3>
+            <small>All invoices combined</small>
+          </article>
+          <article class="stat-card accent-green">
+            <span>Total Collected</span>
+            <h3 id="statCollected">KES 0.00</h3>
+            <small>Recorded payments</small>
+          </article>
+          <article class="stat-card accent-amber">
+            <span>Outstanding</span>
             <h3 id="statOutstanding">KES 0.00</h3>
-          </div>
+            <small>Open balances</small>
+          </article>
+        </div>
+
+        <div class="dashboard-grid">
+          <article class="panel hero-panel">
+            <div class="panel-header inline-between">
+              <div>
+                <h3>Collections Trend</h3>
+                <p class="muted small">Last 6 months overview</p>
+              </div>
+              <span class="badge info" id="collectionPeakLabel">No data</span>
+            </div>
+            <canvas id="collectionsChart" width="900" height="320"></canvas>
+          </article>
+
+          <article class="panel">
+            <div class="panel-header inline-between">
+              <div>
+                <h3>Quick Actions</h3>
+                <p class="muted small">Fast navigation</p>
+              </div>
+            </div>
+            <div class="quick-actions-grid">
+              <button class="quick-action" data-jump="students">Add Student</button>
+              <button class="quick-action" data-jump="invoices">Create Invoice</button>
+              <button class="quick-action" data-jump="payments">Record Payment</button>
+              <button class="quick-action" data-jump="reports">Generate Statement</button>
+            </div>
+          </article>
         </div>
 
         <div class="panel-grid two">
-          <div class="panel">
-            <div class="panel-header">
-              <h3>Recent Students</h3>
+          <article class="panel">
+            <div class="panel-header inline-between">
+              <div>
+                <h3>Outstanding Students</h3>
+                <p class="muted small">Largest balances first</p>
+              </div>
             </div>
-            <div id="recentStudents" class="simple-list empty-state">No student records yet.</div>
-          </div>
-          <div class="panel">
-            <div class="panel-header">
-              <h3>Recent Payments</h3>
+            <div id="outstandingList" class="list-stack empty">No balances yet.</div>
+          </article>
+
+          <article class="panel">
+            <div class="panel-header inline-between">
+              <div>
+                <h3>Recent Activity</h3>
+                <p class="muted small">Latest system actions</p>
+              </div>
             </div>
-            <div id="recentPayments" class="simple-list empty-state">No payments recorded yet.</div>
-          </div>
+            <div id="activityList" class="list-stack empty">No activity yet.</div>
+          </article>
         </div>
       </section>
 
       <section id="students" class="section">
         <div class="panel-grid two uneven">
-          <div class="panel">
-            <div class="panel-header">
-              <h3>Add / Update Student</h3>
+          <article class="panel">
+            <div class="panel-header inline-between">
+              <div>
+                <h3>Add / Update Student</h3>
+                <p class="muted small">Maintain student profiles</p>
+              </div>
             </div>
             <form id="studentForm" class="form-grid">
               <input type="hidden" id="studentId" />
               <div>
                 <label>Admission Number</label>
-                <input type="text" id="admissionNo" placeholder="e.g. JOOUST/2026/001" required />
+                <input type="text" id="admissionNo" placeholder="e.g. EDU/2026/001" required />
               </div>
               <div>
                 <label>Full Name</label>
-                <input type="text" id="studentName" placeholder="Student full name" required />
+                <input type="text" id="studentName" placeholder="Full name" required />
               </div>
               <div>
                 <label>Programme</label>
                 <input type="text" id="programme" placeholder="Programme" required />
               </div>
               <div>
-                <label>Year of Study</label>
+                <label>Year</label>
                 <select id="yearOfStudy" required>
                   <option value="">Select year</option>
                   <option>1</option>
@@ -119,6 +212,10 @@
                 <input type="text" id="phone" placeholder="07xxxxxxxx" />
               </div>
               <div>
+                <label>Email</label>
+                <input type="email" id="studentEmail" placeholder="student@email.com" />
+              </div>
+              <div>
                 <label>Status</label>
                 <select id="studentStatus">
                   <option value="Active">Active</option>
@@ -126,16 +223,27 @@
                   <option value="Deferred">Deferred</option>
                 </select>
               </div>
-              <div class="full-width form-actions">
-                <button type="submit" class="btn primary">Save Student</button>
-                <button type="button" class="btn secondary" id="clearStudentForm">Clear</button>
+              <div>
+                <label>Guardian</label>
+                <input type="text" id="guardianName" placeholder="Parent / guardian" />
+              </div>
+              <div class="full-width">
+                <label>Notes</label>
+                <textarea id="studentNotes" rows="3" placeholder="Extra details"></textarea>
+              </div>
+              <div class="form-actions full-width">
+                <button class="btn primary" type="submit">Save Student</button>
+                <button class="btn secondary" type="button" id="clearStudentBtn">Clear</button>
               </div>
             </form>
-          </div>
+          </article>
 
-          <div class="panel">
-            <div class="panel-header stacked-mobile">
-              <h3>Student Records</h3>
+          <article class="panel">
+            <div class="panel-header inline-between wrap-gap">
+              <div>
+                <h3>Student Register</h3>
+                <p class="muted small">Search and manage records</p>
+              </div>
               <input type="search" id="studentSearch" placeholder="Search student..." />
             </div>
             <div class="table-wrap">
@@ -153,15 +261,18 @@
                 <tbody id="studentsTableBody"></tbody>
               </table>
             </div>
-          </div>
+          </article>
         </div>
       </section>
 
       <section id="invoices" class="section">
         <div class="panel-grid two uneven">
-          <div class="panel">
-            <div class="panel-header">
-              <h3>Create Invoice</h3>
+          <article class="panel">
+            <div class="panel-header inline-between">
+              <div>
+                <h3>Create Invoice</h3>
+                <p class="muted small">Issue fees and other charges</p>
+              </div>
             </div>
             <form id="invoiceForm" class="form-grid">
               <div>
@@ -174,29 +285,37 @@
               </div>
               <div>
                 <label>Description</label>
-                <input type="text" id="invoiceDescription" placeholder="e.g. Semester 1 Fees" required />
+                <input type="text" id="invoiceDescription" placeholder="Semester fees" required />
               </div>
               <div>
                 <label>Term / Semester</label>
-                <input type="text" id="invoiceTerm" placeholder="Semester 1" required />
+                <input type="text" id="invoiceTerm" placeholder="Term 1" required />
               </div>
               <div>
-                <label>Amount (KES)</label>
+                <label>Amount</label>
                 <input type="number" id="invoiceAmount" min="0" step="0.01" required />
               </div>
               <div>
                 <label>Due Date</label>
                 <input type="date" id="invoiceDueDate" required />
               </div>
-              <div class="full-width form-actions">
-                <button type="submit" class="btn primary">Create Invoice</button>
+              <div class="full-width">
+                <label>Invoice Notes</label>
+                <textarea id="invoiceNotes" rows="3" placeholder="Optional notes for the invoice"></textarea>
+              </div>
+              <div class="form-actions full-width">
+                <button class="btn primary" type="submit">Create Invoice</button>
               </div>
             </form>
-          </div>
+          </article>
 
-          <div class="panel">
-            <div class="panel-header">
-              <h3>Invoices</h3>
+          <article class="panel">
+            <div class="panel-header inline-between wrap-gap">
+              <div>
+                <h3>Issued Invoices</h3>
+                <p class="muted small">Printable and traceable</p>
+              </div>
+              <input type="search" id="invoiceSearch" placeholder="Search invoice..." />
             </div>
             <div class="table-wrap">
               <table>
@@ -204,24 +323,28 @@
                   <tr>
                     <th>Invoice No.</th>
                     <th>Student</th>
-                    <th>Description</th>
                     <th>Amount</th>
                     <th>Paid</th>
                     <th>Balance</th>
+                    <th>Status</th>
+                    <th>Action</th>
                   </tr>
                 </thead>
                 <tbody id="invoicesTableBody"></tbody>
               </table>
             </div>
-          </div>
+          </article>
         </div>
       </section>
 
       <section id="payments" class="section">
         <div class="panel-grid two uneven">
-          <div class="panel">
-            <div class="panel-header">
-              <h3>Record Payment / Receipt</h3>
+          <article class="panel">
+            <div class="panel-header inline-between">
+              <div>
+                <h3>Record Payment</h3>
+                <p class="muted small">Generate receipt instantly</p>
+              </div>
             </div>
             <form id="paymentForm" class="form-grid">
               <div>
@@ -241,27 +364,35 @@
                 <select id="paymentMethod" required>
                   <option value="Cash">Cash</option>
                   <option value="Bank">Bank</option>
-                  <option value="MPesa">MPesa</option>
+                  <option value="Mobile Money">Mobile Money</option>
                   <option value="Cheque">Cheque</option>
                 </select>
               </div>
               <div>
-                <label>Amount (KES)</label>
+                <label>Amount</label>
                 <input type="number" id="paymentAmount" min="0" step="0.01" required />
               </div>
               <div>
                 <label>Date</label>
                 <input type="date" id="paymentDate" required />
               </div>
-              <div class="full-width form-actions">
-                <button type="submit" class="btn primary">Save Payment</button>
+              <div class="full-width">
+                <label>Reference</label>
+                <input type="text" id="paymentReference" placeholder="Transaction code / teller no." />
+              </div>
+              <div class="form-actions full-width">
+                <button class="btn primary" type="submit">Save Payment</button>
               </div>
             </form>
-          </div>
+          </article>
 
-          <div class="panel">
-            <div class="panel-header">
-              <h3>Receipts / Payments</h3>
+          <article class="panel">
+            <div class="panel-header inline-between wrap-gap">
+              <div>
+                <h3>Receipts</h3>
+                <p class="muted small">Search and reprint</p>
+              </div>
+              <input type="search" id="paymentSearch" placeholder="Search receipt..." />
             </div>
             <div class="table-wrap">
               <table>
@@ -273,88 +404,197 @@
                     <th>Method</th>
                     <th>Amount</th>
                     <th>Date</th>
+                    <th>Action</th>
                   </tr>
                 </thead>
                 <tbody id="paymentsTableBody"></tbody>
               </table>
             </div>
-          </div>
+          </article>
         </div>
       </section>
 
       <section id="clearance" class="section">
-        <div class="panel-grid two">
-          <div class="panel">
-            <div class="panel-header">
-              <h3>Student Clearance Status</h3>
+        <div class="panel-grid two uneven">
+          <article class="panel">
+            <div class="panel-header inline-between">
+              <div>
+                <h3>Clearance Overview</h3>
+                <p class="muted small">Balance-based clearance status</p>
+              </div>
             </div>
-            <div class="table-wrap">
+            <div id="clearanceSummary" class="callout">No data yet.</div>
+            <div class="table-wrap m-top">
               <table>
                 <thead>
                   <tr>
                     <th>Student</th>
-                    <th>Total Invoiced</th>
-                    <th>Total Paid</th>
+                    <th>Invoiced</th>
+                    <th>Paid</th>
                     <th>Balance</th>
                     <th>Status</th>
+                    <th>Action</th>
                   </tr>
                 </thead>
                 <tbody id="clearanceTableBody"></tbody>
               </table>
             </div>
-          </div>
-          <div class="panel">
-            <div class="panel-header">
-              <h3>Clearance Note</h3>
+          </article>
+
+          <article class="panel">
+            <div class="panel-header inline-between">
+              <div>
+                <h3>Student Profile</h3>
+                <p class="muted small">Click a student from any table to inspect details</p>
+              </div>
             </div>
-            <div id="clearanceSummary" class="summary-card">
-              Select a student from the students or clearance area to review financial clearance status.
-            </div>
-          </div>
+            <div id="studentProfilePanel" class="profile-panel empty">Select a student to view billing profile.</div>
+          </article>
         </div>
       </section>
 
       <section id="reports" class="section">
-        <div class="panel-grid two">
-          <div class="panel">
-            <div class="panel-header">
-              <h3>Summary Reports</h3>
+        <div class="panel-grid two uneven">
+          <article class="panel">
+            <div class="panel-header inline-between">
+              <div>
+                <h3>Report Summary</h3>
+                <p class="muted small">Fast overview of collections</p>
+              </div>
+              <div class="actions-row">
+                <button class="btn secondary" id="exportStudentsBtn">Export Students CSV</button>
+                <button class="btn secondary" id="exportPaymentsBtn">Export Payments CSV</button>
+                <button class="btn secondary" id="exportInvoicesBtn">Export Invoices CSV</button>
+              </div>
             </div>
-            <div class="report-cards">
-              <div class="report-item">
-                <span>Daily Collections</span>
+            <div class="report-grid">
+              <div class="report-card">
+                <span>Today Collections</span>
                 <strong id="dailyCollections">KES 0.00</strong>
               </div>
-              <div class="report-item">
-                <span>Total Invoiced</span>
-                <strong id="totalInvoiced">KES 0.00</strong>
+              <div class="report-card">
+                <span>Total Invoices</span>
+                <strong id="reportTotalInvoices">0</strong>
               </div>
-              <div class="report-item">
-                <span>Total Outstanding</span>
-                <strong id="totalOutstandingReport">KES 0.00</strong>
+              <div class="report-card">
+                <span>Outstanding Amount</span>
+                <strong id="reportOutstanding">KES 0.00</strong>
               </div>
-              <div class="report-item">
-                <span>Students Cleared</span>
-                <strong id="studentsCleared">0</strong>
+              <div class="report-card">
+                <span>Cleared Students</span>
+                <strong id="reportCleared">0</strong>
               </div>
             </div>
-          </div>
-          <div class="panel">
-            <div class="panel-header">
-              <h3>Export / Print</h3>
+            <div id="reportHighlights" class="list-stack compact empty m-top">No report highlights yet.</div>
+          </article>
+
+          <article class="panel">
+            <div class="panel-header inline-between wrap-gap">
+              <div>
+                <h3>Student Statement</h3>
+                <p class="muted small">Generate a printable statement</p>
+              </div>
             </div>
-            <div class="actions-stack">
-              <button class="btn secondary full-width" onclick="window.print()">Print Current Page</button>
-              <button class="btn secondary full-width" id="exportStudentsBtn">Export Students CSV</button>
-              <button class="btn secondary full-width" id="exportPaymentsBtn">Export Payments CSV</button>
+            <div class="form-grid statement-box">
+              <div>
+                <label>Student</label>
+                <select id="statementStudent"></select>
+              </div>
+              <div>
+                <label>As At Date</label>
+                <input type="date" id="statementDate" />
+              </div>
+              <div class="form-actions full-width">
+                <button class="btn primary" id="generateStatementBtn" type="button">Generate Statement</button>
+              </div>
             </div>
-          </div>
+            <div id="statementPreview" class="statement-preview empty">Choose a student and generate a statement.</div>
+          </article>
+        </div>
+      </section>
+
+      <section id="settings" class="section">
+        <div class="panel-grid two uneven">
+          <article class="panel">
+            <div class="panel-header inline-between">
+              <div>
+                <h3>Institution Settings</h3>
+                <p class="muted small">Branding and default billing settings</p>
+              </div>
+            </div>
+            <form id="settingsForm" class="form-grid">
+              <div>
+                <label>Institution Name</label>
+                <input type="text" id="schoolName" required />
+              </div>
+              <div>
+                <label>Current Term</label>
+                <input type="text" id="currentTerm" required />
+              </div>
+              <div>
+                <label>Phone</label>
+                <input type="text" id="schoolPhone" />
+              </div>
+              <div>
+                <label>Email</label>
+                <input type="email" id="schoolEmail" />
+              </div>
+              <div>
+                <label>Currency</label>
+                <input type="text" id="currency" maxlength="5" />
+              </div>
+              <div>
+                <label>Address</label>
+                <input type="text" id="schoolAddress" />
+              </div>
+              <div class="full-width">
+                <label>Footer Note</label>
+                <textarea id="footerNote" rows="3"></textarea>
+              </div>
+              <div class="form-actions full-width">
+                <button class="btn primary" type="submit">Save Settings</button>
+              </div>
+            </form>
+          </article>
+
+          <article class="panel">
+            <div class="panel-header inline-between">
+              <div>
+                <h3>About This Upgrade</h3>
+                <p class="muted small">What was improved</p>
+              </div>
+            </div>
+            <div class="feature-list">
+              <div class="feature-item"><strong>Secure entry</strong><span>Simple demo login screen.</span></div>
+              <div class="feature-item"><strong>Print-ready documents</strong><span>Invoice, receipt, clearance and statement previews.</span></div>
+              <div class="feature-item"><strong>Analytics</strong><span>Dashboard KPIs and collections chart.</span></div>
+              <div class="feature-item"><strong>Backup & restore</strong><span>Export/import JSON backup in browser.</span></div>
+              <div class="feature-item"><strong>Institution branding</strong><span>Customize school name, contact and footer.</span></div>
+              <div class="feature-item"><strong>Persistent storage</strong><span>Data stays in browser with localStorage.</span></div>
+            </div>
+          </article>
         </div>
       </section>
     </main>
   </div>
 
   <div id="toast" class="toast"></div>
+
+  <div id="modal" class="modal hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div>
+          <h3 id="modalTitle">Preview</h3>
+          <p class="muted small">Print-ready output</p>
+        </div>
+        <div class="actions-row">
+          <button class="btn secondary" id="printModalBtn">Print</button>
+          <button class="btn ghost" id="closeModalBtn">Close</button>
+        </div>
+      </div>
+      <div id="modalBody" class="modal-body"></div>
+    </div>
+  </div>
 
   <script src="app.js"></script>
 </body>
