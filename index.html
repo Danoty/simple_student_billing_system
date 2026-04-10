@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Simple Student Billing System</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-icon">₿</div>
+        <div>
+          <h1>Billing System</h1>
+          <p>Web Based</p>
+        </div>
+      </div>
+
+      <nav class="nav">
+        <button class="nav-link active" data-section="dashboard">Dashboard</button>
+        <button class="nav-link" data-section="students">Students</button>
+        <button class="nav-link" data-section="invoices">Invoicing</button>
+        <button class="nav-link" data-section="payments">Receipting</button>
+        <button class="nav-link" data-section="clearance">Clearance</button>
+        <button class="nav-link" data-section="reports">Reports</button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <p>Simple demo system for fees invoicing, receipting and reporting.</p>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <header class="topbar">
+        <div>
+          <h2 id="pageTitle">Dashboard</h2>
+          <p class="muted">Manage student billing records in one place.</p>
+        </div>
+        <div class="actions-row">
+          <button class="btn secondary" id="seedDataBtn">Load Sample Data</button>
+          <button class="btn danger" id="resetDataBtn">Reset Data</button>
+        </div>
+      </header>
+
+      <section id="dashboard" class="section active">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <span>Total Students</span>
+            <h3 id="statStudents">0</h3>
+          </div>
+          <div class="stat-card">
+            <span>Total Invoices</span>
+            <h3 id="statInvoices">0</h3>
+          </div>
+          <div class="stat-card">
+            <span>Total Payments</span>
+            <h3 id="statPayments">KES 0.00</h3>
+          </div>
+          <div class="stat-card">
+            <span>Outstanding Balance</span>
+            <h3 id="statOutstanding">KES 0.00</h3>
+          </div>
+        </div>
+
+        <div class="panel-grid two">
+          <div class="panel">
+            <div class="panel-header">
+              <h3>Recent Students</h3>
+            </div>
+            <div id="recentStudents" class="simple-list empty-state">No student records yet.</div>
+          </div>
+          <div class="panel">
+            <div class="panel-header">
+              <h3>Recent Payments</h3>
+            </div>
+            <div id="recentPayments" class="simple-list empty-state">No payments recorded yet.</div>
+          </div>
+        </div>
+      </section>
+
+      <section id="students" class="section">
+        <div class="panel-grid two uneven">
+          <div class="panel">
+            <div class="panel-header">
+              <h3>Add / Update Student</h3>
+            </div>
+            <form id="studentForm" class="form-grid">
+              <input type="hidden" id="studentId" />
+              <div>
+                <label>Admission Number</label>
+                <input type="text" id="admissionNo" placeholder="e.g. JOOUST/2026/001" required />
+              </div>
+              <div>
+                <label>Full Name</label>
+                <input type="text" id="studentName" placeholder="Student full name" required />
+              </div>
+              <div>
+                <label>Programme</label>
+                <input type="text" id="programme" placeholder="Programme" required />
+              </div>
+              <div>
+                <label>Year of Study</label>
+                <select id="yearOfStudy" required>
+                  <option value="">Select year</option>
+                  <option>1</option>
+                  <option>2</option>
+                  <option>3</option>
+                  <option>4</option>
+                  <option>5</option>
+                  <option>6</option>
+                </select>
+              </div>
+              <div>
+                <label>Phone</label>
+                <input type="text" id="phone" placeholder="07xxxxxxxx" />
+              </div>
+              <div>
+                <label>Status</label>
+                <select id="studentStatus">
+                  <option value="Active">Active</option>
+                  <option value="Completed">Completed</option>
+                  <option value="Deferred">Deferred</option>
+                </select>
+              </div>
+              <div class="full-width form-actions">
+                <button type="submit" class="btn primary">Save Student</button>
+                <button type="button" class="btn secondary" id="clearStudentForm">Clear</button>
+              </div>
+            </form>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header stacked-mobile">
+              <h3>Student Records</h3>
+              <input type="search" id="studentSearch" placeholder="Search student..." />
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Adm No.</th>
+                    <th>Name</th>
+                    <th>Programme</th>
+                    <th>Year</th>
+                    <th>Balance</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="studentsTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="invoices" class="section">
+        <div class="panel-grid two uneven">
+          <div class="panel">
+            <div class="panel-header">
+              <h3>Create Invoice</h3>
+            </div>
+            <form id="invoiceForm" class="form-grid">
+              <div>
+                <label>Student</label>
+                <select id="invoiceStudent" required></select>
+              </div>
+              <div>
+                <label>Invoice Number</label>
+                <input type="text" id="invoiceNumber" readonly />
+              </div>
+              <div>
+                <label>Description</label>
+                <input type="text" id="invoiceDescription" placeholder="e.g. Semester 1 Fees" required />
+              </div>
+              <div>
+                <label>Term / Semester</label>
+                <input type="text" id="invoiceTerm" placeholder="Semester 1" required />
+              </div>
+              <div>
+                <label>Amount (KES)</label>
+                <input type="number" id="invoiceAmount" min="0" step="0.01" required />
+              </div>
+              <div>
+                <label>Due Date</label>
+                <input type="date" id="invoiceDueDate" required />
+              </div>
+              <div class="full-width form-actions">
+                <button type="submit" class="btn primary">Create Invoice</button>
+              </div>
+            </form>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header">
+              <h3>Invoices</h3>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Invoice No.</th>
+                    <th>Student</th>
+                    <th>Description</th>
+                    <th>Amount</th>
+                    <th>Paid</th>
+                    <th>Balance</th>
+                  </tr>
+                </thead>
+                <tbody id="invoicesTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="payments" class="section">
+        <div class="panel-grid two uneven">
+          <div class="panel">
+            <div class="panel-header">
+              <h3>Record Payment / Receipt</h3>
+            </div>
+            <form id="paymentForm" class="form-grid">
+              <div>
+                <label>Student</label>
+                <select id="paymentStudent" required></select>
+              </div>
+              <div>
+                <label>Invoice</label>
+                <select id="paymentInvoice" required></select>
+              </div>
+              <div>
+                <label>Receipt Number</label>
+                <input type="text" id="receiptNumber" readonly />
+              </div>
+              <div>
+                <label>Payment Method</label>
+                <select id="paymentMethod" required>
+                  <option value="Cash">Cash</option>
+                  <option value="Bank">Bank</option>
+                  <option value="MPesa">MPesa</option>
+                  <option value="Cheque">Cheque</option>
+                </select>
+              </div>
+              <div>
+                <label>Amount (KES)</label>
+                <input type="number" id="paymentAmount" min="0" step="0.01" required />
+              </div>
+              <div>
+                <label>Date</label>
+                <input type="date" id="paymentDate" required />
+              </div>
+              <div class="full-width form-actions">
+                <button type="submit" class="btn primary">Save Payment</button>
+              </div>
+            </form>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header">
+              <h3>Receipts / Payments</h3>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Receipt No.</th>
+                    <th>Student</th>
+                    <th>Invoice</th>
+                    <th>Method</th>
+                    <th>Amount</th>
+                    <th>Date</th>
+                  </tr>
+                </thead>
+                <tbody id="paymentsTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="clearance" class="section">
+        <div class="panel-grid two">
+          <div class="panel">
+            <div class="panel-header">
+              <h3>Student Clearance Status</h3>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Student</th>
+                    <th>Total Invoiced</th>
+                    <th>Total Paid</th>
+                    <th>Balance</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="clearanceTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-header">
+              <h3>Clearance Note</h3>
+            </div>
+            <div id="clearanceSummary" class="summary-card">
+              Select a student from the students or clearance area to review financial clearance status.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="reports" class="section">
+        <div class="panel-grid two">
+          <div class="panel">
+            <div class="panel-header">
+              <h3>Summary Reports</h3>
+            </div>
+            <div class="report-cards">
+              <div class="report-item">
+                <span>Daily Collections</span>
+                <strong id="dailyCollections">KES 0.00</strong>
+              </div>
+              <div class="report-item">
+                <span>Total Invoiced</span>
+                <strong id="totalInvoiced">KES 0.00</strong>
+              </div>
+              <div class="report-item">
+                <span>Total Outstanding</span>
+                <strong id="totalOutstandingReport">KES 0.00</strong>
+              </div>
+              <div class="report-item">
+                <span>Students Cleared</span>
+                <strong id="studentsCleared">0</strong>
+              </div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-header">
+              <h3>Export / Print</h3>
+            </div>
+            <div class="actions-stack">
+              <button class="btn secondary full-width" onclick="window.print()">Print Current Page</button>
+              <button class="btn secondary full-width" id="exportStudentsBtn">Export Students CSV</button>
+              <button class="btn secondary full-width" id="exportPaymentsBtn">Export Payments CSV</button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
