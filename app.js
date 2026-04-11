@@ -1,4 +1,4 @@
-const STORAGE_KEY = 'edubill_pro_finance_v4';
+const STORAGE_KEY = 'edubill_pro_finance_v5';
 
 const defaultState = {
   settings: {
@@ -11,7 +11,7 @@ const defaultState = {
     footerNote: 'System demo for student finance workflow.'
   },
   auth: {
-    users: [{ username: 'admin', password: 'admin123', role: 'Administrator' }],
+    users: [{ id:'USR_ADMIN', fullName:'System Administrator', username: 'admin', password: 'admin123', role: 'Administrator', active:true, approvalLimit:0, privileges:['*'] }],
     currentUser: null
   },
   students: [],
@@ -43,6 +43,7 @@ const els = {
   exportStudentsBtn: $('exportStudentsBtn'), exportPaymentsBtn: $('exportPaymentsBtn'), exportInvoicesBtn: $('exportInvoicesBtn'), exportRefundsBtn: $('exportRefundsBtn'),
   statementStudent: $('statementStudent'), statementDate: $('statementDate'), generateStatementBtn: $('generateStatementBtn'), statementPreview: $('statementPreview'),
   settingsForm: $('settingsForm'), schoolName: $('schoolName'), currentTerm: $('currentTerm'), schoolPhone: $('schoolPhone'), schoolEmail: $('schoolEmail'), currency: $('currency'), schoolAddress: $('schoolAddress'), footerNote: $('footerNote'),
+  userForm: $('userForm'), userId: $('userId'), userFullName: $('userFullName'), userUsername: $('userUsername'), userPassword: $('userPassword'), userRole: $('userRole'), userStatus: $('userStatus'), approvalLimit: $('approvalLimit'), userPrivilegesGrid: $('userPrivilegesGrid'), clearUserBtn: $('clearUserBtn'), userSearch: $('userSearch'), usersTableBody: $('usersTableBody'), workflowSummary: $('workflowSummary'),
   loadSampleBtn: $('loadSampleBtn'), logoutBtn: $('logoutBtn'), backupBtn: $('backupBtn'), importBackupInput: $('importBackupInput'), resetBtn: $('resetBtn'), quickActions: document.querySelectorAll('.quick-action'),
   modal: $('modal'), modalTitle: $('modalTitle'), modalBody: $('modalBody'), printModalBtn: $('printModalBtn'), closeModalBtn: $('closeModalBtn'), toast: $('toast')
 };
@@ -53,6 +54,7 @@ function init() {
   bindEvents();
   syncAuthUI();
   syncBranding();
+  renderPrivilegeMatrix();
   setDefaultDates();
   renderAll();
 }
@@ -92,6 +94,10 @@ function bindEvents() {
   els.exportRefundsBtn.addEventListener('click', () => exportCSV('refunds'));
 
   els.settingsForm.addEventListener('submit', saveSettings);
+  els.userForm?.addEventListener('submit', saveUser);
+  els.clearUserBtn?.addEventListener('click', resetUserForm);
+  els.userSearch?.addEventListener('input', renderUsers);
+  els.userRole?.addEventListener('change', handleRolePresetChange);
   els.loadSampleBtn.addEventListener('click', seedSampleData);
   els.backupBtn.addEventListener('click', exportBackup);
   els.importBackupInput.addEventListener('change', importBackup);
@@ -113,8 +119,15 @@ function loadState() {
       auth: { ...structuredClone(defaultState).auth, ...(parsed.auth || {}) },
       students: parsed.students || [], banks: parsed.banks || [], invoices: parsed.invoices || [], payments: parsed.payments || [], refunds: parsed.refunds || [], activities: parsed.activities || []
     };
+    normalized.auth.users = normalizeUsers(normalized.auth.users || []);
+    if (normalized.auth.currentUser) {
+      const current = normalized.auth.users.find(u => u.username === normalized.auth.currentUser.username);
+      normalized.auth.currentUser = current ? makeSessionUser(current) : null;
+    }
+    return normalized;
   } catch { return structuredClone(defaultState); }
 }
+
 
 function persist(message) {
   state.lastSavedAt = new Date().toISOString();
@@ -128,8 +141,10 @@ function syncAuthUI() {
   const loggedIn = Boolean(user);
   els.authScreen.classList.toggle('hidden', loggedIn);
   els.appShell.classList.toggle('hidden', !loggedIn);
-  els.signedInUser.textContent = user ? `${user.username} • ${user.role}` : 'Administrator';
+  els.signedInUser.textContent = user ? `${user.fullName || user.username} • ${user.role}` : 'Administrator';
+  applyAccessControl();
 }
+
 
 function handleLogin(e) {
   e.preventDefault();
@@ -137,7 +152,8 @@ function handleLogin(e) {
   const password = els.loginPassword.value;
   const user = state.auth.users.find(u => u.username === username && u.password === password);
   if (!user) return showToast('Invalid login details. Use admin / admin123.');
-  state.auth.currentUser = { username: user.username, role: user.role };
+  if (user.active === false) return showToast('This user is inactive. Contact administrator.');
+  state.auth.currentUser = makeSessionUser(user);
   persist();
   syncAuthUI();
   logActivity('Signed in', `${user.username} logged into the system.`);
@@ -151,6 +167,7 @@ function handleLogout() {
 }
 
 function switchSection(sectionId) {
+  if (!canAccessSection(sectionId)) { showToast('You do not have access to that section.'); return; }
   els.navLinks.forEach(link => link.classList.toggle('active', link.dataset.section === sectionId));
   els.sections.forEach(section => section.classList.toggle('active', section.id === sectionId));
   const title = sectionId.charAt(0).toUpperCase() + sectionId.slice(1);
@@ -165,6 +182,7 @@ function switchSection(sectionId) {
     ledger: 'Student-by-student ledger and audit trail.',
     clearance: 'Balance-based clearance status and printable letters.',
     reports: 'Collections, exports and printable statements.',
+    users: 'Create users, define privileges and control approvals.',
     settings: 'Institution branding and system notes.'
   };
   els.pageSubtitle.textContent = subtitles[sectionId] || '';
@@ -210,8 +228,10 @@ function renderAll() {
   renderReports();
   renderActivity();
   renderAuditTrail();
+  renderUsers();
   renderLedger(false);
   generateDocumentNumbers();
+  applyAccessControl();
 }
 
 function populateSelectors() {
@@ -271,6 +291,7 @@ function bankRunningBalance(bankId) {
 
 function saveStudent(e) {
   e.preventDefault();
+  if (!requirePermission('students_manage', 'You cannot create or edit students.')) return;
   const payload = {
     id: els.studentId.value || uid('STD'),
     admissionNo: els.admissionNo.value.trim(),
@@ -310,6 +331,7 @@ window.viewStudentProfile = function(id){ const s = studentById(id); if(!s) retu
 
 function saveBank(e) {
   e.preventDefault();
+  if (!requirePermission('banks_manage', 'You cannot maintain banks.')) return;
   const payload = { id: els.bankId.value || uid('BNK'), name: els.bankName.value.trim(), accountNo: els.bankAccount.value.trim(), branch: els.bankBranch.value.trim(), type: els.bankType.value, status: els.bankStatus.value, openingBalance: Number(els.bankOpeningBalance.value||0), notes: els.bankNotes.value.trim(), createdAt: new Date().toISOString() };
   const index = state.banks.findIndex(b => b.id === payload.id);
   if (index >= 0) { state.banks[index] = { ...state.banks[index], ...payload }; logActivity('Bank updated', `${payload.name} was updated.`); }
@@ -330,6 +352,7 @@ window.previewBank = function(id){ const b = bankById(id); if(!b) return; openMo
 
 function saveInvoice(e) {
   e.preventDefault();
+  if (!requirePermission('invoices_create', 'You cannot create invoices.')) return;
   if (!els.invoiceStudent.value) return showToast('Select a student first.');
   const payload = { id: uid('INV'), number: els.invoiceNumber.value, studentId: els.invoiceStudent.value, description: els.invoiceDescription.value.trim(), term: els.invoiceTerm.value.trim(), amount: Number(els.invoiceAmount.value||0), dueDate: els.invoiceDueDate.value, notes: els.invoiceNotes.value.trim(), status: 'Draft', createdAt: new Date().toISOString(), postedAt: null, reversedAt: null, reversalReason: '' };
   state.invoices.unshift(payload);
@@ -362,12 +385,13 @@ function renderInvoices() {
     }).join('');
   els.invoicesTableBody.innerHTML = rows || `<tr><td colspan="7" class="empty-row">No invoices found.</td></tr>`;
 }
-window.postInvoice = function(id){ const inv = invoiceById(id); if(!inv || inv.status!=='Draft') return; inv.status='Posted'; inv.postedAt=new Date().toISOString(); inv.postedBy=currentUsername(); addAudit('Invoice posted', `${inv.number} posted. Journal: Dr Student Debtor ${currency(inv.amount)} | Cr Fee Revenue ${currency(inv.amount)}.`); logActivity('Invoice posted', `${inv.number} is now official and affects student balance.`); persist('Invoice posted.'); renderAll(); };
-window.reverseInvoice = function(id){ const inv=invoiceById(id); if(!inv || inv.status!=='Posted') return; if(invoicePaidAmount(id)>0) return showToast('Cannot reverse invoice with posted receipts. Reverse receipts first.'); const reason = askReason('invoice reversal reason'); if(!reason) return; inv.status='Reversed'; inv.reversedAt=new Date().toISOString(); inv.reversedBy=currentUsername(); inv.reversalReason=reason; addAudit('Invoice reversed', `${inv.number} reversed. Reason: ${reason}. Journal: Dr Fee Revenue ${currency(inv.amount)} | Cr Student Debtor ${currency(inv.amount)}.`); logActivity('Invoice reversed', `${inv.number} was reversed.`); persist('Invoice reversed.'); renderAll(); };
+window.postInvoice = function(id){ if(!requirePermission('invoices_post', 'You cannot post invoices.')) return; const inv = invoiceById(id); if(!inv || inv.status!=='Draft') return; inv.status='Posted'; inv.postedAt=new Date().toISOString(); inv.postedBy=currentUsername(); addAudit('Invoice posted', `${inv.number} posted. Journal: Dr Student Debtor ${currency(inv.amount)} | Cr Fee Revenue ${currency(inv.amount)}.`); logActivity('Invoice posted', `${inv.number} is now official and affects student balance.`); persist('Invoice posted.'); renderAll(); };
+window.reverseInvoice = function(id){ if(!requirePermission('reverse_transactions', 'You cannot reverse invoices.')) return; const inv=invoiceById(id); if(!inv || inv.status!=='Posted') return; if(invoicePaidAmount(id)>0) return showToast('Cannot reverse invoice with posted receipts. Reverse receipts first.'); const reason = askReason('invoice reversal reason'); if(!reason) return; inv.status='Reversed'; inv.reversedAt=new Date().toISOString(); inv.reversedBy=currentUsername(); inv.reversalReason=reason; addAudit('Invoice reversed', `${inv.number} reversed. Reason: ${reason}. Journal: Dr Fee Revenue ${currency(inv.amount)} | Cr Student Debtor ${currency(inv.amount)}.`); logActivity('Invoice reversed', `${inv.number} was reversed.`); persist('Invoice reversed.'); renderAll(); };
 window.previewInvoice = function(id){ const inv = invoiceById(id); const s = studentById(inv.studentId); const paid = invoicePaidAmount(id); const bal = inv.status==='Posted' ? inv.amount-paid : inv.amount; openModal(`Invoice ${inv.number}`, `<div class="doc-shell"><h1>${escapeHtml(state.settings.schoolName)}</h1><h2>Student Invoice</h2><p><strong>Invoice No:</strong> ${escapeHtml(inv.number)}<br><strong>Status:</strong> ${escapeHtml(inv.status)}<br><strong>Student:</strong> ${escapeHtml(s?.name||'')} (${escapeHtml(s?.admissionNo||'')})<br><strong>Description:</strong> ${escapeHtml(inv.description)}<br><strong>Term:</strong> ${escapeHtml(inv.term)}<br><strong>Due Date:</strong> ${escapeHtml(inv.dueDate)}<br><strong>Amount:</strong> ${currency(inv.amount)}<br><strong>Paid:</strong> ${currency(paid)}<br><strong>Balance:</strong> ${currency(bal)}</p><div class="note-box"><strong>Posting impact</strong><br>${inv.status==='Posted'?'Dr Student Debtor / Cr Fee Revenue':'No ledger impact yet. Draft invoice.'}</div><p>${escapeHtml(inv.notes||'')}</p></div>`); };
 
 function savePayment(e) {
   e.preventDefault();
+  if (!requirePermission('receipts_create', 'You cannot create receipts.')) return;
   const invoice = invoiceById(els.paymentInvoice.value);
   if (!invoice || invoice.status !== 'Posted') return showToast('Select a posted invoice.');
   if (!els.paymentBank.value) return showToast('Select a bank.');
@@ -392,8 +416,8 @@ function renderPayments() {
     }).join('');
   els.paymentsTableBody.innerHTML = rows || `<tr><td colspan="7" class="empty-row">No receipts found.</td></tr>`;
 }
-window.postReceipt = function(id){ const p = paymentById(id); if(!p || p.status!=='Draft') return; const inv = invoiceById(p.invoiceId); if(!inv || inv.status!=='Posted') return showToast('Invoice is not posted.'); if(Number(p.amount) > invoiceBalance(inv.id)) return showToast('Receipt exceeds current invoice balance.'); p.status='Posted'; p.postedAt=new Date().toISOString(); p.postedBy=currentUsername(); addAudit('Receipt posted', `${p.number} posted. Journal: Dr ${bankById(p.bankId)?.name||'Bank'} ${currency(p.amount)} | Cr Student ${currency(p.amount)}.`); logActivity('Receipt posted', `${p.number} reduced the student balance.`); persist('Receipt posted.'); renderAll(); };
-window.reverseReceipt = function(id){ const p=paymentById(id); if(!p || p.status!=='Posted') return; const reason = askReason('receipt reversal reason'); if(!reason) return; p.status='Reversed'; p.reversedAt=new Date().toISOString(); p.reversalReason=reason; p.reversedBy=currentUsername(); addAudit('Receipt reversed', `${p.number} reversed. Reason: ${reason}. Journal: Dr Student ${currency(p.amount)} | Cr ${bankById(p.bankId)?.name||'Bank'} ${currency(p.amount)}.`); logActivity('Receipt reversed', `${p.number} reversal increased the student balance.`); persist('Receipt reversed.'); renderAll(); };
+window.postReceipt = function(id){ if(!requirePermission('receipts_post', 'You cannot post receipts.')) return; const p = paymentById(id); if(!p || p.status!=='Draft') return; const inv = invoiceById(p.invoiceId); if(!inv || inv.status!=='Posted') return showToast('Invoice is not posted.'); if(Number(p.amount) > invoiceBalance(inv.id)) return showToast('Receipt exceeds current invoice balance.'); p.status='Posted'; p.postedAt=new Date().toISOString(); p.postedBy=currentUsername(); addAudit('Receipt posted', `${p.number} posted. Journal: Dr ${bankById(p.bankId)?.name||'Bank'} ${currency(p.amount)} | Cr Student ${currency(p.amount)}.`); logActivity('Receipt posted', `${p.number} reduced the student balance.`); persist('Receipt posted.'); renderAll(); };
+window.reverseReceipt = function(id){ if(!requirePermission('reverse_transactions', 'You cannot reverse receipts.')) return; const p=paymentById(id); if(!p || p.status!=='Posted') return; const reason = askReason('receipt reversal reason'); if(!reason) return; p.status='Reversed'; p.reversedAt=new Date().toISOString(); p.reversalReason=reason; p.reversedBy=currentUsername(); addAudit('Receipt reversed', `${p.number} reversed. Reason: ${reason}. Journal: Dr Student ${currency(p.amount)} | Cr ${bankById(p.bankId)?.name||'Bank'} ${currency(p.amount)}.`); logActivity('Receipt reversed', `${p.number} reversal increased the student balance.`); persist('Receipt reversed.'); renderAll(); };
 window.previewReceipt = function(id){ const p = paymentById(id); const s = studentById(p.studentId); const inv = invoiceById(p.invoiceId); const b = bankById(p.bankId); openModal(`Receipt ${p.number}`, `<div class="doc-shell"><h1>${escapeHtml(state.settings.schoolName)}</h1><h2>Official Receipt</h2><p><strong>Receipt No:</strong> ${escapeHtml(p.number)}<br><strong>Status:</strong> ${escapeHtml(p.status)}<br><strong>Student:</strong> ${escapeHtml(s?.name||'')} (${escapeHtml(s?.admissionNo||'')})<br><strong>Invoice:</strong> ${escapeHtml(inv?.number||'')}<br><strong>Bank:</strong> ${escapeHtml(b?.name||'')}<br><strong>Method:</strong> ${escapeHtml(p.method)}<br><strong>Date:</strong> ${escapeHtml(p.date)}<br><strong>Amount:</strong> ${currency(p.amount)}<br><strong>Reference:</strong> ${escapeHtml(p.reference||'-')}</p><div class="note-box"><strong>Posting impact</strong><br>${p.status==='Posted'?'Dr Bank / Cr Student':'No ledger impact yet. Draft receipt.'}</div><p>${escapeHtml(p.narration||'')}</p></div>`); };
 
 function suggestRefundAmount() {
@@ -404,6 +428,7 @@ function suggestRefundAmount() {
 }
 function saveRefund(e) {
   e.preventDefault();
+  if (!requirePermission('refunds_create', 'You cannot create refunds.')) return;
   const studentId = els.refundStudent.value;
   if (!studentId) return showToast('Select a student first.');
   if (!els.refundBank.value) return showToast('Select refund bank.');
@@ -429,9 +454,9 @@ function renderRefunds() {
     }).join('');
   els.refundsTableBody.innerHTML = rows || `<tr><td colspan="6" class="empty-row">No refunds found.</td></tr>`;
 }
-window.approveRefund = function(id){ const r = refundById(id); if(!r || r.status!=='Draft') return; r.status='Approved'; r.approvedAt=new Date().toISOString(); r.approvedBy=currentUsername(); addAudit('Refund approved', `${r.number} approved for ${currency(r.amount)}.`); logActivity('Refund approved', `${r.number} is awaiting payment.`); persist('Refund approved.'); renderAll(); };
-window.payRefund = function(id){ const r = refundById(id); if(!r || r.status!=='Approved') return; const credit = getPostedStudentTotals(r.studentId).credit; if(r.amount > credit) return showToast('Current student credit is lower than refund amount.'); if(r.amount > bankRunningBalance(r.bankId)) return showToast('Selected bank does not have enough balance.'); r.status='Paid'; r.paidAt=new Date().toISOString(); r.paidBy=currentUsername(); addAudit('Refund paid', `${r.number} paid. Journal: Dr Student / Refund Control ${currency(r.amount)} | Cr ${bankById(r.bankId)?.name||'Bank'} ${currency(r.amount)}.`); logActivity('Refund paid', `${r.number} was paid out from bank.`); persist('Refund paid.'); renderAll(); };
-window.reverseRefund = function(id){ const r = refundById(id); if(!r || r.status!=='Paid') return; const reason = askReason('refund reversal reason'); if(!reason) return; r.status='Reversed'; r.reversedAt=new Date().toISOString(); r.reversalReason=reason; r.reversedBy=currentUsername(); addAudit('Refund reversed', `${r.number} reversed. Reason: ${reason}. Journal: Dr ${bankById(r.bankId)?.name||'Bank'} ${currency(r.amount)} | Cr Student / Refund Control ${currency(r.amount)}.`); logActivity('Refund reversed', `${r.number} was reversed.`); persist('Refund reversed.'); renderAll(); };
+window.approveRefund = function(id){ if(!requirePermission('refunds_approve', 'You cannot approve refunds.')) return; const r = refundById(id); if(!r || r.status!=='Draft') return; r.status='Approved'; r.approvedAt=new Date().toISOString(); r.approvedBy=currentUsername(); addAudit('Refund approved', `${r.number} approved for ${currency(r.amount)}.`); logActivity('Refund approved', `${r.number} is awaiting payment.`); persist('Refund approved.'); renderAll(); };
+window.payRefund = function(id){ if(!requirePermission('refunds_pay', 'You cannot pay refunds.')) return; const r = refundById(id); if(!r || r.status!=='Approved') return; const credit = getPostedStudentTotals(r.studentId).credit; if(r.amount > credit) return showToast('Current student credit is lower than refund amount.'); if(r.amount > bankRunningBalance(r.bankId)) return showToast('Selected bank does not have enough balance.'); r.status='Paid'; r.paidAt=new Date().toISOString(); r.paidBy=currentUsername(); addAudit('Refund paid', `${r.number} paid. Journal: Dr Student / Refund Control ${currency(r.amount)} | Cr ${bankById(r.bankId)?.name||'Bank'} ${currency(r.amount)}.`); logActivity('Refund paid', `${r.number} was paid out from bank.`); persist('Refund paid.'); renderAll(); };
+window.reverseRefund = function(id){ if(!requirePermission('reverse_transactions', 'You cannot reverse refunds.')) return; const r = refundById(id); if(!r || r.status!=='Paid') return; const reason = askReason('refund reversal reason'); if(!reason) return; r.status='Reversed'; r.reversedAt=new Date().toISOString(); r.reversalReason=reason; r.reversedBy=currentUsername(); addAudit('Refund reversed', `${r.number} reversed. Reason: ${reason}. Journal: Dr ${bankById(r.bankId)?.name||'Bank'} ${currency(r.amount)} | Cr Student / Refund Control ${currency(r.amount)}.`); logActivity('Refund reversed', `${r.number} was reversed.`); persist('Refund reversed.'); renderAll(); };
 window.previewRefund = function(id){ const r = refundById(id); const s = studentById(r.studentId); const b = bankById(r.bankId); openModal(`Refund ${r.number}`, `<div class="doc-shell"><h1>${escapeHtml(state.settings.schoolName)}</h1><h2>Refund Voucher</h2><p><strong>Refund No:</strong> ${escapeHtml(r.number)}<br><strong>Status:</strong> ${escapeHtml(r.status)}<br><strong>Student:</strong> ${escapeHtml(s?.name||'')} (${escapeHtml(s?.admissionNo||'')})<br><strong>Bank:</strong> ${escapeHtml(b?.name||'')}<br><strong>Date:</strong> ${escapeHtml(r.date)}<br><strong>Amount:</strong> ${currency(r.amount)}<br><strong>Reason:</strong> ${escapeHtml(r.reason)}</p><div class="note-box"><strong>Workflow</strong><br>Draft → Approved → Paid → Reversed if necessary.</div><p>${escapeHtml(r.notes||'')}</p></div>`); };
 
 function renderLedger(updateSection=true) {
@@ -570,6 +595,7 @@ function renderChart() {
 
 function saveSettings(e) {
   e.preventDefault();
+  if (!requirePermission('settings_manage', 'You cannot change settings.')) return;
   state.settings = { schoolName: els.schoolName.value.trim(), currentTerm: els.currentTerm.value.trim(), schoolPhone: els.schoolPhone.value.trim(), schoolEmail: els.schoolEmail.value.trim(), currency: els.currency.value.trim() || 'KES', schoolAddress: els.schoolAddress.value.trim(), footerNote: els.footerNote.value.trim() };
   syncBranding();
   logActivity('Settings saved', 'Institution settings were updated.');
@@ -585,6 +611,7 @@ function dateOnly(v){ return (v||'').slice(0,10); }
 function getRecentMonths(count){ const arr=[]; const d=new Date(); d.setDate(1); for(let i=count-1;i>=0;i--){ const x=new Date(d.getFullYear(), d.getMonth()-i, 1); arr.push(x.toISOString().slice(0,7)); } return arr; }
 
 function exportCSV(type) {
+  if (!requirePermission('reports_export', 'You cannot export reports.')) return;
   const map = {
     students: state.students.map(s => ({admissionNo:s.admissionNo,name:s.name,programme:s.programme,year:s.year,status:s.status,balance:getPostedStudentTotals(s.id).balance})),
     invoices: state.invoices.map(i => ({number:i.number,student:studentById(i.studentId)?.name,amount:i.amount,status:i.status,paid:invoicePaidAmount(i.id),balance:Math.max(0,invoiceBalance(i.id))})),
@@ -597,14 +624,112 @@ function exportCSV(type) {
   const csv = [headers.join(',')].concat(rows.map(row => headers.map(h => JSON.stringify(row[h] ?? '')).join(','))).join('\n');
   downloadBlob(csv, `${type}.csv`, 'text/csv;charset=utf-8;');
 }
-function exportBackup(){ downloadBlob(JSON.stringify(state,null,2), 'edubill_pro_finance_backup.json', 'application/json'); }
-function importBackup(e){ const file=e.target.files[0]; if(!file) return; const reader=new FileReader(); reader.onload=()=>{ try { const parsed=JSON.parse(reader.result); localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...structuredClone(defaultState), ...parsed })); location.reload(); } catch { showToast('Invalid backup file.'); } }; reader.readAsText(file); }
-function resetSystem(){ if(!confirm('Reset all demo data?')) return; localStorage.removeItem(STORAGE_KEY); location.reload(); }
+function exportBackup(){ if (!requirePermission('backup_manage', 'You cannot export backup.')) return; downloadBlob(JSON.stringify(state,null,2), 'edubill_pro_finance_backup.json', 'application/json'); }
+function importBackup(e){ if (!requirePermission('backup_manage', 'You cannot import backup.')) return; const file=e.target.files[0]; if(!file) return; const reader=new FileReader(); reader.onload=()=>{ try { const parsed=JSON.parse(reader.result); localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...structuredClone(defaultState), ...parsed })); location.reload(); } catch { showToast('Invalid backup file.'); } }; reader.readAsText(file); }
+function resetSystem(){ if (!requirePermission('system_reset', 'You cannot reset the system.')) return; if(!confirm('Reset all demo data?')) return; localStorage.removeItem(STORAGE_KEY); location.reload(); }
 function downloadBlob(content, filename, type){ const blob = new Blob([content], {type}); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href=url; a.download=filename; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url); }
 
 function openModal(title, html){ els.modalTitle.textContent = title; els.modalBody.innerHTML = html; els.modal.classList.remove('hidden'); }
 function closeModal(){ els.modal.classList.add('hidden'); }
 function showToast(message){ els.toast.textContent = message; els.toast.classList.add('show'); clearTimeout(showToast.t); showToast.t = setTimeout(()=>els.toast.classList.remove('show'), 2400); }
+
+
+const PRIVILEGE_LABELS = {
+  dashboard_access:'Dashboard access', students_access:'Students section', students_manage:'Create and edit students',
+  banks_access:'Banks section', banks_manage:'Create and edit banks',
+  invoices_access:'Invoices section', invoices_create:'Create draft invoices', invoices_post:'Post invoices',
+  payments_access:'Receipts section', receipts_create:'Create draft receipts', receipts_post:'Post receipts',
+  refunds_access:'Refunds section', refunds_create:'Create refunds', refunds_approve:'Approve refunds', refunds_pay:'Pay refunds',
+  ledger_access:'Ledger section', clearance_access:'Clearance section', reports_access:'Reports section', reports_export:'Export reports',
+  users_access:'Users & access section', users_manage:'Create users and roles', settings_access:'Settings section', settings_manage:'Change settings',
+  reverse_transactions:'Reverse posted transactions', backup_manage:'Backup import/export', system_reset:'Reset system'
+};
+
+const ROLE_PRESETS = {
+  'Administrator':['*'],
+  'CEO':['dashboard_access','reports_access','ledger_access','clearance_access','refunds_access','refunds_approve','settings_access'],
+  'Finance Officer':['dashboard_access','students_access','students_manage','banks_access','banks_manage','invoices_access','invoices_create','invoices_post','payments_access','receipts_create','receipts_post','refunds_access','refunds_create','ledger_access','clearance_access','reports_access','reports_export'],
+  'Bursar':['dashboard_access','students_access','banks_access','invoices_access','invoices_post','payments_access','receipts_post','refunds_access','refunds_approve','refunds_pay','ledger_access','clearance_access','reports_access','reports_export','reverse_transactions'],
+  'Cashier':['dashboard_access','payments_access','receipts_create','ledger_access','reports_access'],
+  'Approver':['dashboard_access','refunds_access','refunds_approve','ledger_access','reports_access','reverse_transactions'],
+  'Custom':[]
+};
+
+function normalizeUsers(users) {
+  return (users.length ? users : structuredClone(defaultState.auth.users)).map((u, idx) => {
+    const role = u.role || 'Custom';
+    const privileges = Array.isArray(u.privileges) && u.privileges.length ? u.privileges : ((role === 'Administrator') ? ['*'] : [...(ROLE_PRESETS[role] || [])]);
+    return { id: u.id || uid('USR'), fullName: u.fullName || u.name || (idx===0 ? 'System Administrator' : u.username), username: u.username, password: u.password || '123456', role, active: u.active !== false, approvalLimit: Number(u.approvalLimit || 0), privileges };
+  });
+}
+function makeSessionUser(user) { return { id:user.id, username:user.username, fullName:user.fullName, role:user.role, active:user.active !== false, approvalLimit:Number(user.approvalLimit||0), privileges:[...(user.privileges||[])] }; }
+function currentUserRecord(){ return state.auth.users.find(u => u.username === state.auth.currentUser?.username) || null; }
+function getUserPrivileges(user){ if(!user) return []; if(user.role === 'Administrator' || (user.privileges||[]).includes('*')) return ['*']; return user.privileges || []; }
+function hasPermission(key){ const user = state.auth.currentUser; if(!user) return false; const privs = getUserPrivileges(user); return privs.includes('*') || privs.includes(key); }
+function requirePermission(key, msg='Access denied.') { if (hasPermission(key)) return true; showToast(msg); return false; }
+function canAccessSection(sectionId){ const map = { dashboard:'dashboard_access', students:'students_access', banks:'banks_access', invoices:'invoices_access', payments:'payments_access', refunds:'refunds_access', ledger:'ledger_access', clearance:'clearance_access', reports:'reports_access', users:'users_access', settings:'settings_access' }; return !map[sectionId] || hasPermission(map[sectionId]); }
+function applyAccessControl(){
+  const currentSection = [...els.sections].find(s => s.classList.contains('active'))?.id || 'dashboard';
+  els.navLinks.forEach(link => {
+    const allowed = canAccessSection(link.dataset.section);
+    link.classList.toggle('hidden-by-access', !allowed);
+  });
+  els.sections.forEach(section => section.classList.toggle('hidden-by-access', !canAccessSection(section.id)));
+  const backupAllowed = hasPermission('backup_manage');
+  if (els.backupBtn) els.backupBtn.classList.toggle('hidden-by-access', !backupAllowed);
+  if (els.resetBtn) els.resetBtn.classList.toggle('hidden-by-access', !hasPermission('system_reset'));
+  if (els.loadSampleBtn) els.loadSampleBtn.classList.toggle('hidden-by-access', !hasPermission('backup_manage'));
+  if (!canAccessSection(currentSection)) {
+    const fallback = ['dashboard','students','banks','invoices','payments','refunds','ledger','clearance','reports','users','settings'].find(canAccessSection) || 'dashboard';
+    els.navLinks.forEach(link => link.classList.toggle('active', link.dataset.section === fallback));
+    els.sections.forEach(section => section.classList.toggle('active', section.id === fallback));
+    els.pageTitle.textContent = fallback.charAt(0).toUpperCase() + fallback.slice(1).replace('&',' & ');
+  }
+}
+function renderPrivilegeMatrix(selected) {
+  if (!els.userPrivilegesGrid) return;
+  const chosen = new Set(selected || []);
+  els.userPrivilegesGrid.innerHTML = Object.entries(PRIVILEGE_LABELS).map(([key, label]) => `<label class="privilege-item"><input type="checkbox" value="${key}" ${chosen.has(key) ? 'checked' : ''} /><div><strong>${escapeHtml(label)}</strong><span>${escapeHtml(key)}</span></div></label>`).join('');
+}
+function selectedPrivileges(){ return [...els.userPrivilegesGrid.querySelectorAll('input:checked')].map(input => input.value); }
+function handleRolePresetChange(){
+  const role = els.userRole.value;
+  if (role === 'Administrator') { renderPrivilegeMatrix(['*']); els.userPrivilegesGrid.innerHTML = `<div class="permission-note">Administrator has full system rights.</div>`; return; }
+  renderPrivilegeMatrix(ROLE_PRESETS[role] || []);
+}
+function resetUserForm(){ if(!els.userForm) return; els.userForm.reset(); els.userId.value=''; els.userStatus.value='Active'; els.approvalLimit.value=''; handleRolePresetChange(); }
+function saveUser(e){
+  e.preventDefault();
+  if (!requirePermission('users_manage', 'Only administrator can manage users.')) return;
+  const username = els.userUsername.value.trim();
+  if (!username) return showToast('Username is required.');
+  const existing = state.auth.users.find(u => u.username === username && u.id !== els.userId.value);
+  if (existing) return showToast('That username already exists.');
+  const role = els.userRole.value;
+  const privileges = role === 'Administrator' ? ['*'] : selectedPrivileges();
+  if (role !== 'Administrator' && !privileges.length) return showToast('Select at least one privilege.');
+  const payload = { id: els.userId.value || uid('USR'), fullName: els.userFullName.value.trim(), username, password: els.userPassword.value, role, active: els.userStatus.value === 'Active', approvalLimit: Number(els.approvalLimit.value || 0), privileges };
+  const idx = state.auth.users.findIndex(u => u.id === payload.id);
+  if (idx >= 0) state.auth.users[idx] = { ...state.auth.users[idx], ...payload };
+  else state.auth.users.unshift(payload);
+  addAudit(idx >= 0 ? 'User updated' : 'User created', `${payload.username} saved with role ${payload.role}.`);
+  persist('User saved.');
+  resetUserForm();
+  renderAll();
+}
+function renderUsers(){
+  if (!els.usersTableBody) return;
+  const q = (els.userSearch?.value || '').trim().toLowerCase();
+  const users = state.auth.users.filter(u => !q || [u.fullName,u.username,u.role,u.active?'Active':'Inactive'].join(' ').toLowerCase().includes(q));
+  els.usersTableBody.innerHTML = users.map(u => `<tr><td><strong>${escapeHtml(u.fullName)}</strong><br><span class="muted small">${escapeHtml(u.username)}</span></td><td>${escapeHtml(u.role)}</td><td><span class="badge ${u.active !== false ? 'success' : 'neutral'}">${u.active !== false ? 'Active' : 'Inactive'}</span></td><td>${(getUserPrivileges(u).includes('*') ? '<span class="badge info">All privileges</span>' : getUserPrivileges(u).slice(0,3).map(p => `<span class="badge neutral">${escapeHtml((PRIVILEGE_LABELS[p]||p).replace(' section',''))}</span>`).join(' ') + (getUserPrivileges(u).length > 3 ? ` <span class="badge info">+${getUserPrivileges(u).length-3}</span>` : ''))}</td><td><div class="actions-row"><button class="table-btn" onclick="editUser('${u.id}')">Edit</button>${u.username !== 'admin' ? `<button class="table-btn danger-lite" onclick="toggleUserStatus('${u.id}')">${u.active !== false ? 'Disable' : 'Activate'}</button>` : ''}</div></td></tr>`).join('') || `<tr><td colspan="5" class="empty-row">No users found.</td></tr>`;
+  const pendingRefunds = state.refunds.filter(r => r.status === 'Draft').length;
+  const approvedRefunds = state.refunds.filter(r => r.status === 'Approved').length;
+  const draftInvoices = state.invoices.filter(i => i.status === 'Draft').length;
+  const draftReceipts = state.payments.filter(p => p.status === 'Draft').length;
+  els.workflowSummary.innerHTML = `<div class="workflow-card"><span>Pending refund approvals</span><strong>${pendingRefunds}</strong></div><div class="workflow-card"><span>Approved refunds awaiting payment</span><strong>${approvedRefunds}</strong></div><div class="workflow-card"><span>Draft invoices</span><strong>${draftInvoices}</strong></div><div class="workflow-card"><span>Draft receipts</span><strong>${draftReceipts}</strong></div><div class="permission-note">Recommended workflow: <strong>Finance Officer</strong> drafts/posts finance entries, <strong>CEO / Approver</strong> approves refunds, and <strong>Administrator</strong> manages users, privileges and system control.</div>`;
+}
+window.editUser = function(id){ if(!requirePermission('users_manage', 'Only administrator can manage users.')) return; const u = state.auth.users.find(x => x.id === id); if(!u) return; els.userId.value=u.id; els.userFullName.value=u.fullName; els.userUsername.value=u.username; els.userPassword.value=u.password; els.userRole.value=u.role; els.userStatus.value=u.active !== false ? 'Active' : 'Inactive'; els.approvalLimit.value = u.approvalLimit || ''; if (u.role === 'Administrator') { els.userPrivilegesGrid.innerHTML = `<div class="permission-note">Administrator has full system rights.</div>`; } else renderPrivilegeMatrix(getUserPrivileges(u)); switchSection('users'); };
+window.toggleUserStatus = function(id){ if(!requirePermission('users_manage', 'Only administrator can manage users.')) return; const u = state.auth.users.find(x => x.id === id); if(!u) return; u.active = !(u.active !== false); addAudit('User status changed', `${u.username} is now ${u.active ? 'Active' : 'Inactive'}.`); if (state.auth.currentUser?.username === u.username && !u.active) state.auth.currentUser = null; persist('User status updated.'); syncAuthUI(); renderAll(); };
 
 function seedSampleData() {
   if (state.students.length || state.invoices.length || state.banks.length) { if (!confirm('Sample data will be added to current data. Continue?')) return; }
@@ -612,6 +737,8 @@ function seedSampleData() {
   const s2 = { id: uid('STD'), admissionNo:'EDU/2026/002', name:'Brian Otieno', programme:'BCom Finance', year:'3', phone:'0723456789', email:'brian@example.com', status:'Active', guardian:'Atieno', notes:'Evening programme', createdAt:new Date().toISOString() };
   const b1 = { id: uid('BNK'), name:'KCB Main Collection', accountNo:'1100223344', branch:'Bondo', type:'Collection', status:'Active', openingBalance:150000, notes:'Main tuition collection account', createdAt:new Date().toISOString() };
   const b2 = { id: uid('BNK'), name:'Equity Fees Account', accountNo:'5566778899', branch:'Siaya', type:'Collection', status:'Active', openingBalance:90000, notes:'Alternative collection account', createdAt:new Date().toISOString() };
+  if (!state.auth.users.some(u => u.username === 'ceo')) state.auth.users.push({ id:uid('USR'), fullName:'Chief Executive Officer', username:'ceo', password:'ceo123', role:'CEO', active:true, approvalLimit:1000000, privileges:[...(ROLE_PRESETS['CEO']||[])] });
+  if (!state.auth.users.some(u => u.username === 'finance')) state.auth.users.push({ id:uid('USR'), fullName:'Finance Officer', username:'finance', password:'finance123', role:'Finance Officer', active:true, approvalLimit:0, privileges:[...(ROLE_PRESETS['Finance Officer']||[])] });
   state.students.unshift(s1,s2); state.banks.unshift(b1,b2);
   const i1 = { id: uid('INV'), number: nextNumber('INV', state.invoices.length+1), studentId:s1.id, description:'Semester Fees', term:'Term 1', amount:30000, dueDate:new Date(Date.now()+10*86400000).toISOString().slice(0,10), notes:'Posted sample invoice', status:'Posted', createdAt:new Date().toISOString(), postedAt:new Date().toISOString() };
   const i2 = { id: uid('INV'), number: nextNumber('INV', state.invoices.length+2), studentId:s2.id, description:'Semester Fees', term:'Term 1', amount:28000, dueDate:new Date(Date.now()+10*86400000).toISOString().slice(0,10), notes:'Posted sample invoice', status:'Posted', createdAt:new Date().toISOString(), postedAt:new Date().toISOString() };

@@ -49,3 +49,15 @@
 .callout strong{font-size:1rem}
 @media (max-width:1400px){.stats-grid.six{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media (max-width:900px){.stats-grid.six{grid-template-columns:repeat(2,minmax(0,1fr))}.profile-grid,.profile-panel .mini-metrics{grid-template-columns:1fr}}
+
+
+.privileges-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-top:8px}
+.privilege-item{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border:1px solid rgba(148,163,184,.24);border-radius:14px;background:rgba(255,255,255,.03)}
+.privilege-item input{margin-top:3px}
+.privilege-item span{display:block;font-size:.82rem;color:var(--muted,#6b7280)}
+.privilege-item strong{display:block;font-size:.92rem}
+.workflow-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px}
+.workflow-card{padding:14px 16px;border-radius:18px;background:linear-gradient(180deg,rgba(37,99,235,.08),rgba(15,23,42,.02));border:1px solid rgba(37,99,235,.14)}
+.workflow-card strong{display:block;font-size:1.35rem;margin-top:6px}
+.permission-note{margin-top:10px;padding:12px 14px;border-radius:14px;background:rgba(15,23,42,.04);font-size:.92rem}
+.hidden-by-access{display:none !important}
