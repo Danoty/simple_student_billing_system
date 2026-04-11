@@ -1,128 +1,50 @@
-const STORAGE_KEY = 'edubill_pro_v2';
+const STORAGE_KEY = 'edubill_pro_finance_v4';
 
 const defaultState = {
   settings: {
-    schoolName: 'EduBill Pro Academy',
-    currentTerm: '2026 Academic Year',
-    schoolPhone: '+254 700 000 000',
-    schoolEmail: 'accounts@edubillpro.test',
+    schoolName: 'EduBill Pro Finance',
+    currentTerm: 'Academic Year 2026/2027',
+    schoolPhone: '+254 700 000000',
+    schoolEmail: 'finance@institution.ac.ke',
     currency: 'KES',
-    schoolAddress: 'P.O. Box 100, Nairobi',
-    footerNote: 'This is a browser-based demo. Customize before production deployment.'
+    schoolAddress: 'Main Campus',
+    footerNote: 'System demo for student finance workflow.'
   },
   auth: {
     users: [{ username: 'admin', password: 'admin123', role: 'Administrator' }],
     currentUser: null
   },
   students: [],
+  banks: [],
   invoices: [],
   payments: [],
+  refunds: [],
   activities: [],
   lastSavedAt: null
 };
 
 const state = loadState();
-
+const $ = id => document.getElementById(id);
 const els = {
-  authScreen: document.getElementById('authScreen'),
-  appShell: document.getElementById('appShell'),
-  loginForm: document.getElementById('loginForm'),
-  loginUsername: document.getElementById('loginUsername'),
-  loginPassword: document.getElementById('loginPassword'),
-  navLinks: document.querySelectorAll('.nav-link'),
-  sections: document.querySelectorAll('.section'),
-  pageTitle: document.getElementById('pageTitle'),
-  pageSubtitle: document.getElementById('pageSubtitle'),
-  signedInUser: document.getElementById('signedInUser'),
-  brandSchoolName: document.getElementById('brandSchoolName'),
-  brandTerm: document.getElementById('brandTerm'),
-  lastSavedLabel: document.getElementById('lastSavedLabel'),
-
-  statStudents: document.getElementById('statStudents'),
-  statInvoiced: document.getElementById('statInvoiced'),
-  statCollected: document.getElementById('statCollected'),
-  statOutstanding: document.getElementById('statOutstanding'),
-  collectionPeakLabel: document.getElementById('collectionPeakLabel'),
-  outstandingList: document.getElementById('outstandingList'),
-  activityList: document.getElementById('activityList'),
-  chart: document.getElementById('collectionsChart'),
-
-  studentForm: document.getElementById('studentForm'),
-  studentId: document.getElementById('studentId'),
-  admissionNo: document.getElementById('admissionNo'),
-  studentName: document.getElementById('studentName'),
-  programme: document.getElementById('programme'),
-  yearOfStudy: document.getElementById('yearOfStudy'),
-  phone: document.getElementById('phone'),
-  studentEmail: document.getElementById('studentEmail'),
-  studentStatus: document.getElementById('studentStatus'),
-  guardianName: document.getElementById('guardianName'),
-  studentNotes: document.getElementById('studentNotes'),
-  clearStudentBtn: document.getElementById('clearStudentBtn'),
-  studentSearch: document.getElementById('studentSearch'),
-  studentsTableBody: document.getElementById('studentsTableBody'),
-  studentProfilePanel: document.getElementById('studentProfilePanel'),
-
-  invoiceForm: document.getElementById('invoiceForm'),
-  invoiceStudent: document.getElementById('invoiceStudent'),
-  invoiceNumber: document.getElementById('invoiceNumber'),
-  invoiceDescription: document.getElementById('invoiceDescription'),
-  invoiceTerm: document.getElementById('invoiceTerm'),
-  invoiceAmount: document.getElementById('invoiceAmount'),
-  invoiceDueDate: document.getElementById('invoiceDueDate'),
-  invoiceNotes: document.getElementById('invoiceNotes'),
-  invoiceSearch: document.getElementById('invoiceSearch'),
-  invoicesTableBody: document.getElementById('invoicesTableBody'),
-
-  paymentForm: document.getElementById('paymentForm'),
-  paymentStudent: document.getElementById('paymentStudent'),
-  paymentInvoice: document.getElementById('paymentInvoice'),
-  receiptNumber: document.getElementById('receiptNumber'),
-  paymentMethod: document.getElementById('paymentMethod'),
-  paymentAmount: document.getElementById('paymentAmount'),
-  paymentDate: document.getElementById('paymentDate'),
-  paymentReference: document.getElementById('paymentReference'),
-  paymentSearch: document.getElementById('paymentSearch'),
-  paymentsTableBody: document.getElementById('paymentsTableBody'),
-
-  clearanceSummary: document.getElementById('clearanceSummary'),
-  clearanceTableBody: document.getElementById('clearanceTableBody'),
-
-  dailyCollections: document.getElementById('dailyCollections'),
-  reportTotalInvoices: document.getElementById('reportTotalInvoices'),
-  reportOutstanding: document.getElementById('reportOutstanding'),
-  reportCleared: document.getElementById('reportCleared'),
-  reportHighlights: document.getElementById('reportHighlights'),
-  exportStudentsBtn: document.getElementById('exportStudentsBtn'),
-  exportPaymentsBtn: document.getElementById('exportPaymentsBtn'),
-  exportInvoicesBtn: document.getElementById('exportInvoicesBtn'),
-  statementStudent: document.getElementById('statementStudent'),
-  statementDate: document.getElementById('statementDate'),
-  generateStatementBtn: document.getElementById('generateStatementBtn'),
-  statementPreview: document.getElementById('statementPreview'),
-
-  settingsForm: document.getElementById('settingsForm'),
-  schoolName: document.getElementById('schoolName'),
-  currentTerm: document.getElementById('currentTerm'),
-  schoolPhone: document.getElementById('schoolPhone'),
-  schoolEmail: document.getElementById('schoolEmail'),
-  currency: document.getElementById('currency'),
-  schoolAddress: document.getElementById('schoolAddress'),
-  footerNote: document.getElementById('footerNote'),
-
-  loadSampleBtn: document.getElementById('loadSampleBtn'),
-  logoutBtn: document.getElementById('logoutBtn'),
-  backupBtn: document.getElementById('backupBtn'),
-  importBackupInput: document.getElementById('importBackupInput'),
-  resetBtn: document.getElementById('resetBtn'),
-  quickActions: document.querySelectorAll('.quick-action'),
-
-  modal: document.getElementById('modal'),
-  modalTitle: document.getElementById('modalTitle'),
-  modalBody: document.getElementById('modalBody'),
-  printModalBtn: document.getElementById('printModalBtn'),
-  closeModalBtn: document.getElementById('closeModalBtn'),
-  toast: document.getElementById('toast')
+  authScreen: $('authScreen'), appShell: $('appShell'), loginForm: $('loginForm'), loginUsername: $('loginUsername'), loginPassword: $('loginPassword'),
+  navLinks: document.querySelectorAll('.nav-link'), sections: document.querySelectorAll('.section'),
+  pageTitle: $('pageTitle'), pageSubtitle: $('pageSubtitle'), signedInUser: $('signedInUser'),
+  brandSchoolName: $('brandSchoolName'), brandTerm: $('brandTerm'), lastSavedLabel: $('lastSavedLabel'),
+  statStudents: $('statStudents'), statInvoiced: $('statInvoiced'), statCollected: $('statCollected'), statOutstanding: $('statOutstanding'), statBankBalance: $('statBankBalance'), statRefunds: $('statRefunds'),
+  collectionPeakLabel: $('collectionPeakLabel'), outstandingList: $('outstandingList'), activityList: $('activityList'), chart: $('collectionsChart'),
+  studentForm: $('studentForm'), studentId: $('studentId'), admissionNo: $('admissionNo'), studentName: $('studentName'), programme: $('programme'), yearOfStudy: $('yearOfStudy'), phone: $('phone'), studentEmail: $('studentEmail'), studentStatus: $('studentStatus'), guardianName: $('guardianName'), studentNotes: $('studentNotes'), clearStudentBtn: $('clearStudentBtn'), studentSearch: $('studentSearch'), studentsTableBody: $('studentsTableBody'),
+  bankForm: $('bankForm'), bankId: $('bankId'), bankName: $('bankName'), bankAccount: $('bankAccount'), bankBranch: $('bankBranch'), bankType: $('bankType'), bankStatus: $('bankStatus'), bankOpeningBalance: $('bankOpeningBalance'), bankNotes: $('bankNotes'), clearBankBtn: $('clearBankBtn'), bankSearch: $('bankSearch'), banksTableBody: $('banksTableBody'),
+  invoiceForm: $('invoiceForm'), invoiceStudent: $('invoiceStudent'), invoiceNumber: $('invoiceNumber'), invoiceDescription: $('invoiceDescription'), invoiceTerm: $('invoiceTerm'), invoiceAmount: $('invoiceAmount'), invoiceDueDate: $('invoiceDueDate'), invoiceNotes: $('invoiceNotes'), invoiceSearch: $('invoiceSearch'), invoicesTableBody: $('invoicesTableBody'),
+  paymentForm: $('paymentForm'), paymentStudent: $('paymentStudent'), paymentInvoice: $('paymentInvoice'), receiptNumber: $('receiptNumber'), paymentBank: $('paymentBank'), paymentMethod: $('paymentMethod'), paymentAmount: $('paymentAmount'), paymentDate: $('paymentDate'), paymentReference: $('paymentReference'), paymentNarration: $('paymentNarration'), paymentSearch: $('paymentSearch'), paymentsTableBody: $('paymentsTableBody'),
+  refundForm: $('refundForm'), refundStudent: $('refundStudent'), refundNumber: $('refundNumber'), refundBank: $('refundBank'), refundAmount: $('refundAmount'), refundDate: $('refundDate'), refundReason: $('refundReason'), refundNotes: $('refundNotes'), refundSearch: $('refundSearch'), refundsTableBody: $('refundsTableBody'),
+  ledgerStudent: $('ledgerStudent'), ledgerDate: $('ledgerDate'), generateLedgerBtn: $('generateLedgerBtn'), ledgerSummary: $('ledgerSummary'), ledgerTableBody: $('ledgerTableBody'), auditTrailList: $('auditTrailList'),
+  studentProfilePanel: $('studentProfilePanel'), clearanceSummary: $('clearanceSummary'), clearanceTableBody: $('clearanceTableBody'),
+  dailyCollections: $('dailyCollections'), reportTotalInvoices: $('reportTotalInvoices'), reportOutstanding: $('reportOutstanding'), reportCleared: $('reportCleared'), reportHighlights: $('reportHighlights'),
+  exportStudentsBtn: $('exportStudentsBtn'), exportPaymentsBtn: $('exportPaymentsBtn'), exportInvoicesBtn: $('exportInvoicesBtn'), exportRefundsBtn: $('exportRefundsBtn'),
+  statementStudent: $('statementStudent'), statementDate: $('statementDate'), generateStatementBtn: $('generateStatementBtn'), statementPreview: $('statementPreview'),
+  settingsForm: $('settingsForm'), schoolName: $('schoolName'), currentTerm: $('currentTerm'), schoolPhone: $('schoolPhone'), schoolEmail: $('schoolEmail'), currency: $('currency'), schoolAddress: $('schoolAddress'), footerNote: $('footerNote'),
+  loadSampleBtn: $('loadSampleBtn'), logoutBtn: $('logoutBtn'), backupBtn: $('backupBtn'), importBackupInput: $('importBackupInput'), resetBtn: $('resetBtn'), quickActions: document.querySelectorAll('.quick-action'),
+  modal: $('modal'), modalTitle: $('modalTitle'), modalBody: $('modalBody'), printModalBtn: $('printModalBtn'), closeModalBtn: $('closeModalBtn'), toast: $('toast')
 };
 
 init();
@@ -145,21 +67,29 @@ function bindEvents() {
   els.clearStudentBtn.addEventListener('click', resetStudentForm);
   els.studentSearch.addEventListener('input', renderStudents);
 
+  els.bankForm.addEventListener('submit', saveBank);
+  els.clearBankBtn.addEventListener('click', resetBankForm);
+  els.bankSearch.addEventListener('input', renderBanks);
+
   els.invoiceForm.addEventListener('submit', saveInvoice);
   els.invoiceSearch.addEventListener('input', renderInvoices);
 
   els.paymentForm.addEventListener('submit', savePayment);
-  els.paymentStudent.addEventListener('change', () => {
-    fillInvoiceOptions(els.paymentStudent.value);
-    suggestPaymentAmount();
-  });
+  els.paymentStudent.addEventListener('change', () => { fillInvoiceOptions(els.paymentStudent.value); suggestPaymentAmount(); });
   els.paymentInvoice.addEventListener('change', suggestPaymentAmount);
   els.paymentSearch.addEventListener('input', renderPayments);
+
+  els.refundForm.addEventListener('submit', saveRefund);
+  els.refundStudent.addEventListener('change', suggestRefundAmount);
+  els.refundSearch.addEventListener('input', renderRefunds);
+
+  els.generateLedgerBtn.addEventListener('click', renderLedger);
+  els.generateStatementBtn.addEventListener('click', generateStatementPreview);
 
   els.exportStudentsBtn.addEventListener('click', () => exportCSV('students'));
   els.exportPaymentsBtn.addEventListener('click', () => exportCSV('payments'));
   els.exportInvoicesBtn.addEventListener('click', () => exportCSV('invoices'));
-  els.generateStatementBtn.addEventListener('click', generateStatementPreview);
+  els.exportRefundsBtn.addEventListener('click', () => exportCSV('refunds'));
 
   els.settingsForm.addEventListener('submit', saveSettings);
   els.loadSampleBtn.addEventListener('click', seedSampleData);
@@ -169,9 +99,7 @@ function bindEvents() {
 
   els.closeModalBtn.addEventListener('click', closeModal);
   els.printModalBtn.addEventListener('click', () => window.print());
-  els.modal.addEventListener('click', e => {
-    if (e.target === els.modal) closeModal();
-  });
+  els.modal.addEventListener('click', e => e.target === els.modal && closeModal());
 }
 
 function loadState() {
@@ -180,18 +108,12 @@ function loadState() {
     if (!raw) return structuredClone(defaultState);
     const parsed = JSON.parse(raw);
     return {
-      ...structuredClone(defaultState),
-      ...parsed,
+      ...structuredClone(defaultState), ...parsed,
       settings: { ...structuredClone(defaultState).settings, ...(parsed.settings || {}) },
       auth: { ...structuredClone(defaultState).auth, ...(parsed.auth || {}) },
-      students: parsed.students || [],
-      invoices: parsed.invoices || [],
-      payments: parsed.payments || [],
-      activities: parsed.activities || []
+      students: parsed.students || [], banks: parsed.banks || [], invoices: parsed.invoices || [], payments: parsed.payments || [], refunds: parsed.refunds || [], activities: parsed.activities || []
     };
-  } catch {
-    return structuredClone(defaultState);
-  }
+  } catch { return structuredClone(defaultState); }
 }
 
 function persist(message) {
@@ -209,958 +131,498 @@ function syncAuthUI() {
   els.signedInUser.textContent = user ? `${user.username} • ${user.role}` : 'Administrator';
 }
 
-function handleLogin(event) {
-  event.preventDefault();
+function handleLogin(e) {
+  e.preventDefault();
   const username = els.loginUsername.value.trim();
   const password = els.loginPassword.value;
-  const user = state.auth.users.find(entry => entry.username === username && entry.password === password);
-
-  if (!user) {
-    showToast('Invalid login details. Use admin / admin123.');
-    return;
-  }
-
+  const user = state.auth.users.find(u => u.username === username && u.password === password);
+  if (!user) return showToast('Invalid login details. Use admin / admin123.');
   state.auth.currentUser = { username: user.username, role: user.role };
-  addActivity('User login', `${user.username} signed into the system.`);
-  persist('Welcome back.');
+  persist();
   syncAuthUI();
+  logActivity('Signed in', `${user.username} logged into the system.`);
   renderAll();
 }
 
 function handleLogout() {
-  if (!state.auth.currentUser) return;
-  addActivity('User logout', `${state.auth.currentUser.username} signed out.`);
   state.auth.currentUser = null;
-  persist('Logged out successfully.');
+  persist();
   syncAuthUI();
 }
 
-function switchSection(id) {
+function switchSection(sectionId) {
+  els.navLinks.forEach(link => link.classList.toggle('active', link.dataset.section === sectionId));
+  els.sections.forEach(section => section.classList.toggle('active', section.id === sectionId));
+  const title = sectionId.charAt(0).toUpperCase() + sectionId.slice(1);
+  els.pageTitle.textContent = title;
   const subtitles = {
-    dashboard: 'A polished web-based billing demo ready for use and customization.',
-    students: 'Capture, update and inspect student records.',
-    invoices: 'Create and manage invoices with printable output.',
-    payments: 'Record fees paid and reprint official receipts.',
-    clearance: 'Check balances and generate clearance letters.',
-    reports: 'Generate summaries, exports and student statements.',
-    settings: 'Customize institution branding and defaults.'
+    dashboard: 'A premium web-based finance demo with posting, banks, refunds and reversals.',
+    students: 'Manage student bio data and monitor balances.',
+    banks: 'Maintain collection banks used in receipt posting and refunds.',
+    invoices: 'Create draft invoices, post them, and reverse when necessary.',
+    payments: 'Draft, post and reverse receipts with bank selection.',
+    refunds: 'Approve, pay and reverse student refunds.',
+    ledger: 'Student-by-student ledger and audit trail.',
+    clearance: 'Balance-based clearance status and printable letters.',
+    reports: 'Collections, exports and printable statements.',
+    settings: 'Institution branding and system notes.'
   };
-
-  els.sections.forEach(section => section.classList.toggle('active', section.id === id));
-  els.navLinks.forEach(link => link.classList.toggle('active', link.dataset.section === id));
-  els.pageTitle.textContent = titleCase(id);
-  els.pageSubtitle.textContent = subtitles[id] || 'Manage data';
-}
-
-function titleCase(value) {
-  return value.charAt(0).toUpperCase() + value.slice(1);
-}
-
-function setDefaultDates() {
-  els.invoiceDueDate.value = todayISO();
-  els.paymentDate.value = todayISO();
-  els.statementDate.value = todayISO();
-  els.invoiceNumber.value = nextNumber('INV');
-  els.receiptNumber.value = nextNumber('RCPT');
+  els.pageSubtitle.textContent = subtitles[sectionId] || '';
 }
 
 function syncBranding() {
-  els.brandSchoolName.textContent = state.settings.schoolName;
-  els.brandTerm.textContent = state.settings.currentTerm;
-  els.schoolName.value = state.settings.schoolName;
-  els.currentTerm.value = state.settings.currentTerm;
-  els.schoolPhone.value = state.settings.schoolPhone;
-  els.schoolEmail.value = state.settings.schoolEmail;
-  els.currency.value = state.settings.currency;
-  els.schoolAddress.value = state.settings.schoolAddress;
-  els.footerNote.value = state.settings.footerNote;
+  const s = state.settings;
+  els.brandSchoolName.textContent = s.schoolName;
+  els.brandTerm.textContent = s.currentTerm;
+  els.schoolName.value = s.schoolName;
+  els.currentTerm.value = s.currentTerm;
+  els.schoolPhone.value = s.schoolPhone;
+  els.schoolEmail.value = s.schoolEmail;
+  els.currency.value = s.currency;
+  els.schoolAddress.value = s.schoolAddress;
+  els.footerNote.value = s.footerNote;
+  syncSaveStatus();
 }
 
 function syncSaveStatus() {
-  els.lastSavedLabel.textContent = state.lastSavedAt ? `Saved ${new Date(state.lastSavedAt).toLocaleString()}` : 'Not saved yet';
+  els.lastSavedLabel.textContent = state.lastSavedAt ? new Date(state.lastSavedAt).toLocaleString() : 'Not saved yet';
+}
+
+function setDefaultDates() {
+  const today = new Date().toISOString().slice(0, 10);
+  const due = new Date(Date.now() + 14 * 86400000).toISOString().slice(0, 10);
+  els.invoiceDueDate.value ||= due;
+  els.paymentDate.value ||= today;
+  els.refundDate.value ||= today;
+  els.statementDate.value ||= today;
+  els.ledgerDate.value ||= today;
 }
 
 function renderAll() {
-  syncBranding();
-  syncSaveStatus();
-  fillStudentOptions();
-  fillInvoiceOptions(els.paymentStudent.value);
+  populateSelectors();
   renderDashboard();
   renderStudents();
+  renderBanks();
   renderInvoices();
   renderPayments();
+  renderRefunds();
   renderClearance();
   renderReports();
+  renderActivity();
+  renderAuditTrail();
+  renderLedger(false);
+  generateDocumentNumbers();
 }
 
-function saveStudent(event) {
-  event.preventDefault();
+function populateSelectors() {
+  const studentOptions = ['<option value="">Select student</option>'].concat(state.students.map(s => `<option value="${s.id}">${escapeHtml(s.admissionNo)} - ${escapeHtml(s.name)}</option>`)).join('');
+  [els.invoiceStudent, els.paymentStudent, els.refundStudent, els.ledgerStudent, els.statementStudent].forEach(select => {
+    const current = select.value;
+    select.innerHTML = studentOptions;
+    if ([...select.options].some(o => o.value === current)) select.value = current;
+  });
+  fillInvoiceOptions(els.paymentStudent.value);
+  const bankOptions = ['<option value="">Select bank</option>'].concat(state.banks.filter(b => b.status === 'Active').map(b => `<option value="${b.id}">${escapeHtml(b.name)} - ${escapeHtml(b.accountNo)}</option>`)).join('');
+  [els.paymentBank, els.refundBank].forEach(select => {
+    const current = select.value;
+    select.innerHTML = bankOptions;
+    if ([...select.options].some(o => o.value === current)) select.value = current;
+  });
+}
+
+function generateDocumentNumbers() {
+  els.invoiceNumber.value = nextNumber('INV', state.invoices.length + 1);
+  els.receiptNumber.value = nextNumber('RCT', state.payments.length + 1);
+  els.refundNumber.value = nextNumber('RFD', state.refunds.length + 1);
+}
+
+function nextNumber(prefix, num) { return `${prefix}-${String(num).padStart(5, '0')}`; }
+function uid(prefix='ID') { return `${prefix}_${Math.random().toString(36).slice(2,10)}${Date.now().toString(36).slice(-4)}`; }
+function currency(value) { return `${state.settings.currency} ${Number(value || 0).toLocaleString(undefined,{minimumFractionDigits:2, maximumFractionDigits:2})}`; }
+function escapeHtml(str='') { return String(str).replace(/[&<>"]/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[s])); }
+function askReason(label='reason') { const value = prompt(`Enter ${label}:`); return value ? value.trim() : ''; }
+
+function studentById(id){ return state.students.find(s => s.id === id); }
+function bankById(id){ return state.banks.find(b => b.id === id); }
+function invoiceById(id){ return state.invoices.find(i => i.id === id); }
+function paymentById(id){ return state.payments.find(p => p.id === id); }
+function refundById(id){ return state.refunds.find(r => r.id === id); }
+
+function getPostedStudentTotals(studentId) {
+  const invoiced = state.invoices.filter(i => i.studentId === studentId && i.status === 'Posted').reduce((a,b)=>a+Number(b.amount),0);
+  const receipts = state.payments.filter(p => p.studentId === studentId && p.status === 'Posted').reduce((a,b)=>a+Number(b.amount),0);
+  const refunds = state.refunds.filter(r => r.studentId === studentId && r.status === 'Paid').reduce((a,b)=>a+Number(b.amount),0);
+  return { invoiced, receipts, refunds, balance: invoiced - receipts + refunds, credit: Math.max(0, receipts - invoiced - refunds) };
+}
+
+function invoicePaidAmount(invoiceId) {
+  return state.payments.filter(p => p.invoiceId === invoiceId && p.status === 'Posted').reduce((a,b)=>a+Number(b.amount),0);
+}
+function invoiceBalance(invoiceId) {
+  const inv = invoiceById(invoiceId); if (!inv || inv.status !== 'Posted') return 0;
+  return Number(inv.amount) - invoicePaidAmount(invoiceId);
+}
+function bankRunningBalance(bankId) {
+  const bank = bankById(bankId); if (!bank) return 0;
+  const receipts = state.payments.filter(p => p.bankId === bankId && p.status === 'Posted').reduce((a,b)=>a+Number(b.amount),0);
+  const refunds = state.refunds.filter(r => r.bankId === bankId && r.status === 'Paid').reduce((a,b)=>a+Number(b.amount),0);
+  return Number(bank.openingBalance || 0) + receipts - refunds;
+}
+
+function saveStudent(e) {
+  e.preventDefault();
   const payload = {
     id: els.studentId.value || uid('STD'),
     admissionNo: els.admissionNo.value.trim(),
     name: els.studentName.value.trim(),
     programme: els.programme.value.trim(),
-    yearOfStudy: els.yearOfStudy.value,
+    year: els.yearOfStudy.value,
     phone: els.phone.value.trim(),
     email: els.studentEmail.value.trim(),
     status: els.studentStatus.value,
-    guardianName: els.guardianName.value.trim(),
+    guardian: els.guardianName.value.trim(),
     notes: els.studentNotes.value.trim(),
-    createdAt: els.studentId.value ? getStudentById(els.studentId.value)?.createdAt || new Date().toISOString() : new Date().toISOString()
+    createdAt: new Date().toISOString()
   };
-
-  if (!payload.admissionNo || !payload.name || !payload.programme || !payload.yearOfStudy) {
-    showToast('Complete required student fields.');
-    return;
-  }
-
-  const duplicate = state.students.find(student => student.admissionNo.toLowerCase() === payload.admissionNo.toLowerCase() && student.id !== payload.id);
-  if (duplicate) {
-    showToast('Admission number already exists.');
-    return;
-  }
-
-  const existingIndex = state.students.findIndex(student => student.id === payload.id);
-  if (existingIndex >= 0) {
-    state.students[existingIndex] = payload;
-    addActivity('Student updated', `${payload.name} (${payload.admissionNo}) record updated.`);
-    persist('Student record updated.');
-  } else {
-    state.students.push(payload);
-    addActivity('Student added', `${payload.name} (${payload.admissionNo}) registered.`);
-    persist('Student saved.');
-  }
-
+  const index = state.students.findIndex(s => s.id === payload.id);
+  if (index >= 0) { state.students[index] = { ...state.students[index], ...payload }; logActivity('Student updated', `${payload.name} profile was updated.`); }
+  else { state.students.unshift(payload); logActivity('Student created', `${payload.name} was added.`); }
+  persist('Student saved.');
   resetStudentForm();
   renderAll();
-  showStudentProfile(payload.id);
 }
-
-function resetStudentForm() {
-  els.studentForm.reset();
-  els.studentId.value = '';
-}
-
-function editStudent(studentId) {
-  const student = getStudentById(studentId);
-  if (!student) return;
-  els.studentId.value = student.id;
-  els.admissionNo.value = student.admissionNo;
-  els.studentName.value = student.name;
-  els.programme.value = student.programme;
-  els.yearOfStudy.value = student.yearOfStudy;
-  els.phone.value = student.phone || '';
-  els.studentEmail.value = student.email || '';
-  els.studentStatus.value = student.status || 'Active';
-  els.guardianName.value = student.guardianName || '';
-  els.studentNotes.value = student.notes || '';
-  switchSection('students');
-  showToast(`Editing ${student.name}.`);
-}
-window.editStudent = editStudent;
-
-function showStudentProfile(studentId) {
-  const student = getStudentById(studentId);
-  if (!student) {
-    els.studentProfilePanel.innerHTML = 'Select a student to view billing profile.';
-    return;
-  }
-  const invoiced = getStudentTotalInvoiced(studentId);
-  const paid = getStudentTotalPaid(studentId);
-  const balance = invoiced - paid;
-  const invoices = getStudentInvoices(studentId);
-  const payments = getPaymentsForStudent(studentId);
-  const statusBadge = balance <= 0 && invoiced > 0 ? '<span class="badge success">Cleared</span>' : balance > 0 ? '<span class="badge warning">Pending Balance</span>' : '<span class="badge danger">No Invoice</span>';
-
-  const recentLines = invoices.slice().reverse().slice(0, 3).map(inv => `<div class="list-item"><div><strong>${inv.invoiceNumber}</strong><small>${inv.description}</small></div><div>${fmtMoney(inv.amount)}</div></div>`).join('') || '<div class="muted">No invoices for this student yet.</div>';
-
-  els.studentProfilePanel.innerHTML = `
-    <div>
-      <div class="inline-between wrap-gap">
-        <div>
-          <h3>${student.name}</h3>
-          <p class="muted">${student.admissionNo} • ${student.programme} • Year ${student.yearOfStudy}</p>
-        </div>
-        ${statusBadge}
-      </div>
-      <div class="profile-kpis">
-        <div class="mini-metric"><span>Total Invoiced</span><strong>${fmtMoney(invoiced)}</strong></div>
-        <div class="mini-metric"><span>Total Paid</span><strong>${fmtMoney(paid)}</strong></div>
-        <div class="mini-metric"><span>Balance</span><strong>${fmtMoney(balance)}</strong></div>
-      </div>
-      <div class="m-top">
-        <p><strong>Contacts:</strong> ${student.phone || '-'} ${student.email ? `• ${student.email}` : ''}</p>
-        <p><strong>Guardian:</strong> ${student.guardianName || '-'}</p>
-        <p><strong>Status:</strong> ${student.status}</p>
-        <p><strong>Notes:</strong> ${student.notes || '-'}</p>
-      </div>
-      <div class="m-top">
-        <h4>Recent Invoices</h4>
-        <div class="list-stack compact">${recentLines}</div>
-      </div>
-      <div class="m-top">
-        <button class="btn secondary" onclick="previewStatement('${student.id}')">Preview Statement</button>
-        ${balance <= 0 && invoiced > 0 ? `<button class="btn ghost" onclick="previewClearance('${student.id}')">Preview Clearance</button>` : ''}
-      </div>
-      <div class="m-top muted">Payments recorded: ${payments.length}</div>
-    </div>
-  `;
-}
-window.showStudentProfile = showStudentProfile;
-
-function saveInvoice(event) {
-  event.preventDefault();
-  const studentId = els.invoiceStudent.value;
-  const amount = Number(els.invoiceAmount.value || 0);
-  if (!studentId || amount <= 0) {
-    showToast('Select a student and enter a valid amount.');
-    return;
-  }
-
-  const invoice = {
-    id: uid('INV'),
-    studentId,
-    invoiceNumber: els.invoiceNumber.value,
-    description: els.invoiceDescription.value.trim(),
-    term: els.invoiceTerm.value.trim(),
-    amount,
-    dueDate: els.invoiceDueDate.value,
-    notes: els.invoiceNotes.value.trim(),
-    createdAt: new Date().toISOString()
-  };
-
-  state.invoices.push(invoice);
-  addActivity('Invoice created', `${invoice.invoiceNumber} issued for ${getStudentById(studentId)?.name || 'student'}.`);
-  persist('Invoice created.');
-  els.invoiceForm.reset();
-  els.invoiceNumber.value = nextNumber('INV');
-  els.invoiceDueDate.value = todayISO();
-  renderAll();
-  showStudentProfile(studentId);
-}
-
-function savePayment(event) {
-  event.preventDefault();
-  const studentId = els.paymentStudent.value;
-  const invoiceId = els.paymentInvoice.value;
-  const amount = Number(els.paymentAmount.value || 0);
-  const invoice = getInvoiceById(invoiceId);
-  if (!studentId || !invoiceId || !invoice || amount <= 0) {
-    showToast('Select valid payment details.');
-    return;
-  }
-
-  const balance = getInvoiceBalance(invoiceId);
-  if (amount > balance) {
-    showToast(`Amount exceeds invoice balance of ${fmtMoney(balance)}.`);
-    return;
-  }
-
-  const payment = {
-    id: uid('PAY'),
-    studentId,
-    invoiceId,
-    receiptNumber: els.receiptNumber.value,
-    method: els.paymentMethod.value,
-    amount,
-    date: els.paymentDate.value,
-    reference: els.paymentReference.value.trim(),
-    createdAt: new Date().toISOString()
-  };
-
-  state.payments.push(payment);
-  addActivity('Payment recorded', `${payment.receiptNumber} for ${getStudentById(studentId)?.name || 'student'} captured.`);
-  persist('Payment saved.');
-  els.paymentForm.reset();
-  els.receiptNumber.value = nextNumber('RCPT');
-  els.paymentDate.value = todayISO();
-  fillInvoiceOptions('');
-  renderAll();
-  previewReceipt(payment.id);
-}
-
-function fillStudentOptions() {
-  const options = ['<option value="">Select student</option>']
-    .concat(state.students.map(student => `<option value="${student.id}">${escapeHtml(student.admissionNo)} - ${escapeHtml(student.name)}</option>`))
-    .join('');
-  els.invoiceStudent.innerHTML = options;
-  els.paymentStudent.innerHTML = options;
-  els.statementStudent.innerHTML = options;
-}
-
-function fillInvoiceOptions(studentId = '') {
-  const invoices = studentId
-    ? getStudentInvoices(studentId).filter(invoice => getInvoiceBalance(invoice.id) > 0)
-    : [];
-  const options = ['<option value="">Select invoice</option>']
-    .concat(invoices.map(invoice => `<option value="${invoice.id}">${escapeHtml(invoice.invoiceNumber)} • ${escapeHtml(invoice.description)} • ${fmtMoney(getInvoiceBalance(invoice.id))}</option>`))
-    .join('');
-  els.paymentInvoice.innerHTML = options;
-}
-
-function suggestPaymentAmount() {
-  const invoiceId = els.paymentInvoice.value;
-  els.paymentAmount.value = invoiceId ? getInvoiceBalance(invoiceId).toFixed(2) : '';
-}
+function resetStudentForm() { els.studentForm.reset(); els.studentId.value=''; }
 
 function renderStudents() {
-  const query = els.studentSearch.value.trim().toLowerCase();
-  const rows = state.students
-    .filter(student => !query || `${student.admissionNo} ${student.name} ${student.programme}`.toLowerCase().includes(query))
-    .sort((a, b) => a.name.localeCompare(b.name))
-    .map(student => `
-      <tr>
-        <td>${escapeHtml(student.admissionNo)}</td>
-        <td><button class="link-btn" onclick="showStudentProfile('${student.id}')">${escapeHtml(student.name)}</button></td>
-        <td>${escapeHtml(student.programme)}</td>
-        <td>${escapeHtml(student.yearOfStudy)}</td>
-        <td>${fmtMoney(getStudentBalance(student.id))}</td>
-        <td><button class="link-btn" onclick="editStudent('${student.id}')">Edit</button></td>
-      </tr>
-    `)
-    .join('');
-
-  els.studentsTableBody.innerHTML = rows || '<tr><td colspan="6" class="muted">No student records found.</td></tr>';
+  const q = els.studentSearch.value.trim().toLowerCase();
+  const rows = state.students.filter(s => !q || [s.admissionNo,s.name,s.programme,s.email].join(' ').toLowerCase().includes(q))
+    .map(s => {
+      const totals = getPostedStudentTotals(s.id);
+      return `<tr>
+        <td>${escapeHtml(s.admissionNo)}</td><td>${escapeHtml(s.name)}</td><td>${escapeHtml(s.programme)}</td><td>${escapeHtml(s.year)}</td><td>${currency(totals.balance)}</td>
+        <td><div class="actions-row"><button class="table-btn" onclick="editStudent('${s.id}')">Edit</button><button class="table-btn" onclick="viewStudentProfile('${s.id}')">View</button></div></td>
+      </tr>`;
+    }).join('');
+  els.studentsTableBody.innerHTML = rows || `<tr><td colspan="6" class="empty-row">No students found.</td></tr>`;
 }
+window.editStudent = function(id){ const s = studentById(id); if(!s) return; els.studentId.value=s.id; els.admissionNo.value=s.admissionNo; els.studentName.value=s.name; els.programme.value=s.programme; els.yearOfStudy.value=s.year; els.phone.value=s.phone; els.studentEmail.value=s.email; els.studentStatus.value=s.status; els.guardianName.value=s.guardian; els.studentNotes.value=s.notes; switchSection('students'); };
+window.viewStudentProfile = function(id){ const s = studentById(id); if(!s) return; const t = getPostedStudentTotals(id); els.studentProfilePanel.classList.remove('empty'); els.studentProfilePanel.innerHTML = `<div class="profile-grid"><div><strong>${escapeHtml(s.name)}</strong><p class="muted small">${escapeHtml(s.admissionNo)} • ${escapeHtml(s.programme)} • Year ${escapeHtml(s.year)}</p></div><div class="profile-badges"><span class="badge info">${escapeHtml(s.status)}</span><span class="badge ${t.balance>0?'warn':'success'}">Balance ${currency(t.balance)}</span></div></div><div class="mini-metrics"><div><span>Posted Invoices</span><strong>${currency(t.invoiced)}</strong></div><div><span>Receipts</span><strong>${currency(t.receipts)}</strong></div><div><span>Refunds</span><strong>${currency(t.refunds)}</strong></div></div><div class="note-box"><strong>Contacts</strong><br>${escapeHtml(s.phone||'-')} • ${escapeHtml(s.email||'-')}<br>${escapeHtml(s.guardian||'-')}</div><div class="note-box"><strong>Notes</strong><br>${escapeHtml(s.notes||'No notes')}</div>`; switchSection('clearance'); };
 
+function saveBank(e) {
+  e.preventDefault();
+  const payload = { id: els.bankId.value || uid('BNK'), name: els.bankName.value.trim(), accountNo: els.bankAccount.value.trim(), branch: els.bankBranch.value.trim(), type: els.bankType.value, status: els.bankStatus.value, openingBalance: Number(els.bankOpeningBalance.value||0), notes: els.bankNotes.value.trim(), createdAt: new Date().toISOString() };
+  const index = state.banks.findIndex(b => b.id === payload.id);
+  if (index >= 0) { state.banks[index] = { ...state.banks[index], ...payload }; logActivity('Bank updated', `${payload.name} was updated.`); }
+  else { state.banks.unshift(payload); logActivity('Bank created', `${payload.name} was added to bank setup.`); }
+  persist('Bank saved.');
+  resetBankForm();
+  renderAll();
+}
+function resetBankForm(){ els.bankForm.reset(); els.bankId.value=''; els.bankOpeningBalance.value='0'; }
+function renderBanks() {
+  const q = els.bankSearch.value.trim().toLowerCase();
+  const rows = state.banks.filter(b => !q || [b.name,b.accountNo,b.branch].join(' ').toLowerCase().includes(q))
+    .map(b => `<tr><td>${escapeHtml(b.name)}</td><td>${escapeHtml(b.accountNo)}</td><td>${escapeHtml(b.branch)}</td><td><span class="badge ${b.status==='Active'?'success':'neutral'}">${escapeHtml(b.status)}</span></td><td>${currency(bankRunningBalance(b.id))}</td><td><div class="actions-row"><button class="table-btn" onclick="editBank('${b.id}')">Edit</button><button class="table-btn" onclick="previewBank('${b.id}')">View</button></div></td></tr>`).join('');
+  els.banksTableBody.innerHTML = rows || `<tr><td colspan="6" class="empty-row">No banks found.</td></tr>`;
+}
+window.editBank = function(id){ const b = bankById(id); if(!b) return; els.bankId.value=b.id; els.bankName.value=b.name; els.bankAccount.value=b.accountNo; els.bankBranch.value=b.branch; els.bankType.value=b.type; els.bankStatus.value=b.status; els.bankOpeningBalance.value=b.openingBalance; els.bankNotes.value=b.notes; switchSection('banks'); };
+window.previewBank = function(id){ const b = bankById(id); if(!b) return; openModal(`${b.name} Bank Profile`, `<div class="doc-shell"><h2>${escapeHtml(b.name)}</h2><p><strong>Account:</strong> ${escapeHtml(b.accountNo)}<br><strong>Branch:</strong> ${escapeHtml(b.branch)}<br><strong>Status:</strong> ${escapeHtml(b.status)}<br><strong>Balance:</strong> ${currency(bankRunningBalance(id))}</p><p>${escapeHtml(b.notes||'')}</p></div>`); };
+
+function saveInvoice(e) {
+  e.preventDefault();
+  if (!els.invoiceStudent.value) return showToast('Select a student first.');
+  const payload = { id: uid('INV'), number: els.invoiceNumber.value, studentId: els.invoiceStudent.value, description: els.invoiceDescription.value.trim(), term: els.invoiceTerm.value.trim(), amount: Number(els.invoiceAmount.value||0), dueDate: els.invoiceDueDate.value, notes: els.invoiceNotes.value.trim(), status: 'Draft', createdAt: new Date().toISOString(), postedAt: null, reversedAt: null, reversalReason: '' };
+  state.invoices.unshift(payload);
+  logActivity('Invoice drafted', `${payload.number} saved as draft.`);
+  persist('Draft invoice saved.');
+  els.invoiceForm.reset();
+  setDefaultDates();
+  generateDocumentNumbers();
+  renderAll();
+}
+function fillInvoiceOptions(studentId) {
+  const posted = state.invoices.filter(i => i.studentId === studentId && i.status === 'Posted' && invoiceBalance(i.id) > 0);
+  els.paymentInvoice.innerHTML = ['<option value="">Select invoice</option>'].concat(posted.map(i => `<option value="${i.id}">${escapeHtml(i.number)} - ${currency(invoiceBalance(i.id))} balance</option>`)).join('');
+}
+function suggestPaymentAmount() {
+  const invoiceId = els.paymentInvoice.value;
+  if (!invoiceId) return;
+  els.paymentAmount.value = String(invoiceBalance(invoiceId).toFixed(2));
+}
 function renderInvoices() {
-  const query = els.invoiceSearch.value.trim().toLowerCase();
-  const rows = state.invoices
-    .slice()
-    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-    .filter(invoice => {
-      const student = getStudentById(invoice.studentId);
-      return !query || `${invoice.invoiceNumber} ${invoice.description} ${student?.name || ''}`.toLowerCase().includes(query);
-    })
-    .map(invoice => {
-      const student = getStudentById(invoice.studentId);
-      const balance = getInvoiceBalance(invoice.id);
-      const paid = getInvoicePaid(invoice.id);
-      const status = balance <= 0 ? '<span class="badge success">Paid</span>' : paid > 0 ? '<span class="badge warning">Part Paid</span>' : '<span class="badge danger">Unpaid</span>';
-      return `
-        <tr>
-          <td>${escapeHtml(invoice.invoiceNumber)}</td>
-          <td><button class="link-btn" onclick="showStudentProfile('${invoice.studentId}')">${escapeHtml(student?.name || 'Unknown')}</button></td>
-          <td>${fmtMoney(invoice.amount)}</td>
-          <td>${fmtMoney(paid)}</td>
-          <td>${fmtMoney(balance)}</td>
-          <td>${status}</td>
-          <td><button class="link-btn" onclick="previewInvoice('${invoice.id}')">Print</button></td>
-        </tr>
-      `;
-    })
-    .join('');
-
-  els.invoicesTableBody.innerHTML = rows || '<tr><td colspan="7" class="muted">No invoices yet.</td></tr>';
+  const q = els.invoiceSearch.value.trim().toLowerCase();
+  const rows = state.invoices.filter(i => !q || [i.number, studentById(i.studentId)?.name, i.description, i.status].join(' ').toLowerCase().includes(q))
+    .map(i => {
+      const paid = invoicePaidAmount(i.id); const bal = i.status === 'Posted' ? Number(i.amount)-paid : 0; const s = studentById(i.studentId);
+      const actions = [];
+      actions.push(`<button class="table-btn" onclick="previewInvoice('${i.id}')">View</button>`);
+      if (i.status === 'Draft') actions.push(`<button class="table-btn primary-lite" onclick="postInvoice('${i.id}')">Post</button>`);
+      if (i.status === 'Posted' && paid === 0) actions.push(`<button class="table-btn danger-lite" onclick="reverseInvoice('${i.id}')">Reverse</button>`);
+      return `<tr><td>${escapeHtml(i.number)}</td><td>${escapeHtml(s?.name||'')}</td><td>${currency(i.amount)}</td><td>${currency(paid)}</td><td>${currency(bal)}</td><td><span class="badge ${statusTone(i.status)}">${escapeHtml(i.status)}</span></td><td><div class="actions-row">${actions.join('')}</div></td></tr>`;
+    }).join('');
+  els.invoicesTableBody.innerHTML = rows || `<tr><td colspan="7" class="empty-row">No invoices found.</td></tr>`;
 }
+window.postInvoice = function(id){ const inv = invoiceById(id); if(!inv || inv.status!=='Draft') return; inv.status='Posted'; inv.postedAt=new Date().toISOString(); inv.postedBy=currentUsername(); addAudit('Invoice posted', `${inv.number} posted. Journal: Dr Student Debtor ${currency(inv.amount)} | Cr Fee Revenue ${currency(inv.amount)}.`); logActivity('Invoice posted', `${inv.number} is now official and affects student balance.`); persist('Invoice posted.'); renderAll(); };
+window.reverseInvoice = function(id){ const inv=invoiceById(id); if(!inv || inv.status!=='Posted') return; if(invoicePaidAmount(id)>0) return showToast('Cannot reverse invoice with posted receipts. Reverse receipts first.'); const reason = askReason('invoice reversal reason'); if(!reason) return; inv.status='Reversed'; inv.reversedAt=new Date().toISOString(); inv.reversedBy=currentUsername(); inv.reversalReason=reason; addAudit('Invoice reversed', `${inv.number} reversed. Reason: ${reason}. Journal: Dr Fee Revenue ${currency(inv.amount)} | Cr Student Debtor ${currency(inv.amount)}.`); logActivity('Invoice reversed', `${inv.number} was reversed.`); persist('Invoice reversed.'); renderAll(); };
+window.previewInvoice = function(id){ const inv = invoiceById(id); const s = studentById(inv.studentId); const paid = invoicePaidAmount(id); const bal = inv.status==='Posted' ? inv.amount-paid : inv.amount; openModal(`Invoice ${inv.number}`, `<div class="doc-shell"><h1>${escapeHtml(state.settings.schoolName)}</h1><h2>Student Invoice</h2><p><strong>Invoice No:</strong> ${escapeHtml(inv.number)}<br><strong>Status:</strong> ${escapeHtml(inv.status)}<br><strong>Student:</strong> ${escapeHtml(s?.name||'')} (${escapeHtml(s?.admissionNo||'')})<br><strong>Description:</strong> ${escapeHtml(inv.description)}<br><strong>Term:</strong> ${escapeHtml(inv.term)}<br><strong>Due Date:</strong> ${escapeHtml(inv.dueDate)}<br><strong>Amount:</strong> ${currency(inv.amount)}<br><strong>Paid:</strong> ${currency(paid)}<br><strong>Balance:</strong> ${currency(bal)}</p><div class="note-box"><strong>Posting impact</strong><br>${inv.status==='Posted'?'Dr Student Debtor / Cr Fee Revenue':'No ledger impact yet. Draft invoice.'}</div><p>${escapeHtml(inv.notes||'')}</p></div>`); };
 
+function savePayment(e) {
+  e.preventDefault();
+  const invoice = invoiceById(els.paymentInvoice.value);
+  if (!invoice || invoice.status !== 'Posted') return showToast('Select a posted invoice.');
+  if (!els.paymentBank.value) return showToast('Select a bank.');
+  const amount = Number(els.paymentAmount.value||0);
+  const bal = invoiceBalance(invoice.id);
+  if (amount <= 0) return showToast('Receipt amount must be greater than zero.');
+  if (amount > bal) return showToast('Receipt amount cannot exceed invoice balance.');
+  const payload = { id: uid('RCT'), number: els.receiptNumber.value, studentId: els.paymentStudent.value, invoiceId: invoice.id, bankId: els.paymentBank.value, method: els.paymentMethod.value, amount, date: els.paymentDate.value, reference: els.paymentReference.value.trim(), narration: els.paymentNarration.value.trim(), status: 'Draft', createdAt: new Date().toISOString() };
+  state.payments.unshift(payload);
+  logActivity('Receipt drafted', `${payload.number} saved as draft.`);
+  persist('Draft receipt saved.');
+  els.paymentForm.reset(); setDefaultDates(); renderAll();
+}
 function renderPayments() {
-  const query = els.paymentSearch.value.trim().toLowerCase();
-  const rows = state.payments
-    .slice()
-    .sort((a, b) => new Date(b.date || b.createdAt) - new Date(a.date || a.createdAt))
-    .filter(payment => {
-      const student = getStudentById(payment.studentId);
-      const invoice = getInvoiceById(payment.invoiceId);
-      return !query || `${payment.receiptNumber} ${student?.name || ''} ${invoice?.invoiceNumber || ''} ${payment.method}`.toLowerCase().includes(query);
-    })
-    .map(payment => {
-      const student = getStudentById(payment.studentId);
-      const invoice = getInvoiceById(payment.invoiceId);
-      return `
-        <tr>
-          <td>${escapeHtml(payment.receiptNumber)}</td>
-          <td><button class="link-btn" onclick="showStudentProfile('${payment.studentId}')">${escapeHtml(student?.name || 'Unknown')}</button></td>
-          <td>${escapeHtml(invoice?.invoiceNumber || 'Unknown')}</td>
-          <td>${escapeHtml(payment.method)}</td>
-          <td>${fmtMoney(payment.amount)}</td>
-          <td>${escapeHtml(payment.date)}</td>
-          <td><button class="link-btn" onclick="previewReceipt('${payment.id}')">Print</button></td>
-        </tr>
-      `;
-    })
-    .join('');
-
-  els.paymentsTableBody.innerHTML = rows || '<tr><td colspan="7" class="muted">No payments recorded.</td></tr>';
+  const q = els.paymentSearch.value.trim().toLowerCase();
+  const rows = state.payments.filter(p => !q || [p.number, studentById(p.studentId)?.name, invoiceById(p.invoiceId)?.number, bankById(p.bankId)?.name, p.status].join(' ').toLowerCase().includes(q))
+    .map(p => {
+      const actions = [`<button class="table-btn" onclick="previewReceipt('${p.id}')">View</button>`];
+      if (p.status === 'Draft') actions.push(`<button class="table-btn primary-lite" onclick="postReceipt('${p.id}')">Post</button>`);
+      if (p.status === 'Posted') actions.push(`<button class="table-btn danger-lite" onclick="reverseReceipt('${p.id}')">Reverse</button>`);
+      return `<tr><td>${escapeHtml(p.number)}</td><td>${escapeHtml(studentById(p.studentId)?.name||'')}</td><td>${escapeHtml(invoiceById(p.invoiceId)?.number||'')}</td><td>${escapeHtml(bankById(p.bankId)?.name||'')}</td><td>${currency(p.amount)}</td><td><span class="badge ${statusTone(p.status)}">${escapeHtml(p.status)}</span></td><td><div class="actions-row">${actions.join('')}</div></td></tr>`;
+    }).join('');
+  els.paymentsTableBody.innerHTML = rows || `<tr><td colspan="7" class="empty-row">No receipts found.</td></tr>`;
 }
+window.postReceipt = function(id){ const p = paymentById(id); if(!p || p.status!=='Draft') return; const inv = invoiceById(p.invoiceId); if(!inv || inv.status!=='Posted') return showToast('Invoice is not posted.'); if(Number(p.amount) > invoiceBalance(inv.id)) return showToast('Receipt exceeds current invoice balance.'); p.status='Posted'; p.postedAt=new Date().toISOString(); p.postedBy=currentUsername(); addAudit('Receipt posted', `${p.number} posted. Journal: Dr ${bankById(p.bankId)?.name||'Bank'} ${currency(p.amount)} | Cr Student ${currency(p.amount)}.`); logActivity('Receipt posted', `${p.number} reduced the student balance.`); persist('Receipt posted.'); renderAll(); };
+window.reverseReceipt = function(id){ const p=paymentById(id); if(!p || p.status!=='Posted') return; const reason = askReason('receipt reversal reason'); if(!reason) return; p.status='Reversed'; p.reversedAt=new Date().toISOString(); p.reversalReason=reason; p.reversedBy=currentUsername(); addAudit('Receipt reversed', `${p.number} reversed. Reason: ${reason}. Journal: Dr Student ${currency(p.amount)} | Cr ${bankById(p.bankId)?.name||'Bank'} ${currency(p.amount)}.`); logActivity('Receipt reversed', `${p.number} reversal increased the student balance.`); persist('Receipt reversed.'); renderAll(); };
+window.previewReceipt = function(id){ const p = paymentById(id); const s = studentById(p.studentId); const inv = invoiceById(p.invoiceId); const b = bankById(p.bankId); openModal(`Receipt ${p.number}`, `<div class="doc-shell"><h1>${escapeHtml(state.settings.schoolName)}</h1><h2>Official Receipt</h2><p><strong>Receipt No:</strong> ${escapeHtml(p.number)}<br><strong>Status:</strong> ${escapeHtml(p.status)}<br><strong>Student:</strong> ${escapeHtml(s?.name||'')} (${escapeHtml(s?.admissionNo||'')})<br><strong>Invoice:</strong> ${escapeHtml(inv?.number||'')}<br><strong>Bank:</strong> ${escapeHtml(b?.name||'')}<br><strong>Method:</strong> ${escapeHtml(p.method)}<br><strong>Date:</strong> ${escapeHtml(p.date)}<br><strong>Amount:</strong> ${currency(p.amount)}<br><strong>Reference:</strong> ${escapeHtml(p.reference||'-')}</p><div class="note-box"><strong>Posting impact</strong><br>${p.status==='Posted'?'Dr Bank / Cr Student':'No ledger impact yet. Draft receipt.'}</div><p>${escapeHtml(p.narration||'')}</p></div>`); };
 
-function renderDashboard() {
-  const totalInvoiced = state.invoices.reduce((sum, invoice) => sum + Number(invoice.amount || 0), 0);
-  const totalCollected = state.payments.reduce((sum, payment) => sum + Number(payment.amount || 0), 0);
-  const outstanding = totalInvoiced - totalCollected;
+function suggestRefundAmount() {
+  const studentId = els.refundStudent.value;
+  if (!studentId) return;
+  const t = getPostedStudentTotals(studentId);
+  els.refundAmount.value = String(Math.max(0, t.credit).toFixed(2));
+}
+function saveRefund(e) {
+  e.preventDefault();
+  const studentId = els.refundStudent.value;
+  if (!studentId) return showToast('Select a student first.');
+  if (!els.refundBank.value) return showToast('Select refund bank.');
+  const amount = Number(els.refundAmount.value||0);
+  if (amount <= 0) return showToast('Refund amount must be greater than zero.');
+  const credit = getPostedStudentTotals(studentId).credit;
+  if (amount > credit) return showToast('Refund cannot exceed available student credit.');
+  const payload = { id: uid('RFD'), number: els.refundNumber.value, studentId, bankId: els.refundBank.value, amount, date: els.refundDate.value, reason: els.refundReason.value.trim(), notes: els.refundNotes.value.trim(), status: 'Draft', createdAt: new Date().toISOString() };
+  state.refunds.unshift(payload);
+  logActivity('Refund drafted', `${payload.number} saved as draft.`);
+  persist('Draft refund saved.');
+  els.refundForm.reset(); setDefaultDates(); renderAll();
+}
+function renderRefunds() {
+  const q = els.refundSearch.value.trim().toLowerCase();
+  const rows = state.refunds.filter(r => !q || [r.number, studentById(r.studentId)?.name, bankById(r.bankId)?.name, r.status, r.reason].join(' ').toLowerCase().includes(q))
+    .map(r => {
+      const actions = [`<button class="table-btn" onclick="previewRefund('${r.id}')">View</button>`];
+      if (r.status === 'Draft') actions.push(`<button class="table-btn primary-lite" onclick="approveRefund('${r.id}')">Approve</button>`);
+      if (r.status === 'Approved') actions.push(`<button class="table-btn primary-lite" onclick="payRefund('${r.id}')">Pay</button>`);
+      if (r.status === 'Paid') actions.push(`<button class="table-btn danger-lite" onclick="reverseRefund('${r.id}')">Reverse</button>`);
+      return `<tr><td>${escapeHtml(r.number)}</td><td>${escapeHtml(studentById(r.studentId)?.name||'')}</td><td>${escapeHtml(bankById(r.bankId)?.name||'')}</td><td>${currency(r.amount)}</td><td><span class="badge ${statusTone(r.status)}">${escapeHtml(r.status)}</span></td><td><div class="actions-row">${actions.join('')}</div></td></tr>`;
+    }).join('');
+  els.refundsTableBody.innerHTML = rows || `<tr><td colspan="6" class="empty-row">No refunds found.</td></tr>`;
+}
+window.approveRefund = function(id){ const r = refundById(id); if(!r || r.status!=='Draft') return; r.status='Approved'; r.approvedAt=new Date().toISOString(); r.approvedBy=currentUsername(); addAudit('Refund approved', `${r.number} approved for ${currency(r.amount)}.`); logActivity('Refund approved', `${r.number} is awaiting payment.`); persist('Refund approved.'); renderAll(); };
+window.payRefund = function(id){ const r = refundById(id); if(!r || r.status!=='Approved') return; const credit = getPostedStudentTotals(r.studentId).credit; if(r.amount > credit) return showToast('Current student credit is lower than refund amount.'); if(r.amount > bankRunningBalance(r.bankId)) return showToast('Selected bank does not have enough balance.'); r.status='Paid'; r.paidAt=new Date().toISOString(); r.paidBy=currentUsername(); addAudit('Refund paid', `${r.number} paid. Journal: Dr Student / Refund Control ${currency(r.amount)} | Cr ${bankById(r.bankId)?.name||'Bank'} ${currency(r.amount)}.`); logActivity('Refund paid', `${r.number} was paid out from bank.`); persist('Refund paid.'); renderAll(); };
+window.reverseRefund = function(id){ const r = refundById(id); if(!r || r.status!=='Paid') return; const reason = askReason('refund reversal reason'); if(!reason) return; r.status='Reversed'; r.reversedAt=new Date().toISOString(); r.reversalReason=reason; r.reversedBy=currentUsername(); addAudit('Refund reversed', `${r.number} reversed. Reason: ${reason}. Journal: Dr ${bankById(r.bankId)?.name||'Bank'} ${currency(r.amount)} | Cr Student / Refund Control ${currency(r.amount)}.`); logActivity('Refund reversed', `${r.number} was reversed.`); persist('Refund reversed.'); renderAll(); };
+window.previewRefund = function(id){ const r = refundById(id); const s = studentById(r.studentId); const b = bankById(r.bankId); openModal(`Refund ${r.number}`, `<div class="doc-shell"><h1>${escapeHtml(state.settings.schoolName)}</h1><h2>Refund Voucher</h2><p><strong>Refund No:</strong> ${escapeHtml(r.number)}<br><strong>Status:</strong> ${escapeHtml(r.status)}<br><strong>Student:</strong> ${escapeHtml(s?.name||'')} (${escapeHtml(s?.admissionNo||'')})<br><strong>Bank:</strong> ${escapeHtml(b?.name||'')}<br><strong>Date:</strong> ${escapeHtml(r.date)}<br><strong>Amount:</strong> ${currency(r.amount)}<br><strong>Reason:</strong> ${escapeHtml(r.reason)}</p><div class="note-box"><strong>Workflow</strong><br>Draft → Approved → Paid → Reversed if necessary.</div><p>${escapeHtml(r.notes||'')}</p></div>`); };
 
-  els.statStudents.textContent = state.students.length;
-  els.statInvoiced.textContent = fmtMoney(totalInvoiced);
-  els.statCollected.textContent = fmtMoney(totalCollected);
-  els.statOutstanding.textContent = fmtMoney(outstanding);
-
-  const outstandingStudents = state.students
-    .map(student => ({ student, balance: getStudentBalance(student.id) }))
-    .filter(entry => entry.balance > 0)
-    .sort((a, b) => b.balance - a.balance)
-    .slice(0, 5)
-    .map(entry => `
-      <div class="list-item">
-        <div>
-          <strong>${escapeHtml(entry.student.name)}</strong>
-          <small>${escapeHtml(entry.student.admissionNo)} • ${escapeHtml(entry.student.programme)}</small>
-        </div>
-        <div><strong>${fmtMoney(entry.balance)}</strong></div>
-      </div>
-    `)
-    .join('');
-  els.outstandingList.innerHTML = outstandingStudents || '<div class="muted">No balances yet.</div>';
-
-  const activities = state.activities.slice(0, 6).map(activity => `
-    <div class="list-item">
-      <div>
-        <strong>${escapeHtml(activity.title)}</strong>
-        <small>${escapeHtml(activity.description)}</small>
-      </div>
-      <div><small>${new Date(activity.time).toLocaleString()}</small></div>
-    </div>
-  `).join('');
-  els.activityList.innerHTML = activities || '<div class="muted">No activity yet.</div>';
-
-  drawCollectionsChart();
+function renderLedger(updateSection=true) {
+  const studentId = els.ledgerStudent.value;
+  const asAt = els.ledgerDate.value || new Date().toISOString().slice(0,10);
+  if (!studentId) {
+    els.ledgerSummary.textContent = 'Choose a student to view the ledger.';
+    els.ledgerTableBody.innerHTML = `<tr><td colspan="7" class="empty-row">No ledger generated yet.</td></tr>`;
+    return;
+  }
+  const s = studentById(studentId);
+  const entries = [];
+  state.invoices.filter(i => i.studentId===studentId && ['Posted','Reversed'].includes(i.status) && dateOnly(i.postedAt||i.createdAt) <= asAt).forEach(i => {
+    if (i.status === 'Posted') entries.push({ date: dateOnly(i.postedAt||i.createdAt), ref: i.number, type:'Invoice Post', debit:Number(i.amount), credit:0, details:`${i.description} | Dr Student Debtor / Cr Fee Revenue` });
+    if (i.status === 'Reversed') entries.push({ date: dateOnly(i.reversedAt||i.createdAt), ref: i.number, type:'Invoice Reverse', debit:0, credit:Number(i.amount), details:`Reversal: ${i.reversalReason||'-'}` });
+  });
+  state.payments.filter(p => p.studentId===studentId && ['Posted','Reversed'].includes(p.status) && dateOnly((p.status==='Reversed'?p.reversedAt:p.postedAt)||p.createdAt) <= asAt).forEach(p => {
+    if (p.status === 'Posted') entries.push({ date: dateOnly(p.postedAt||p.createdAt), ref: p.number, type:'Receipt Post', debit:0, credit:Number(p.amount), details:`${bankById(p.bankId)?.name||'Bank'} | Dr Bank / Cr Student` });
+    if (p.status === 'Reversed') entries.push({ date: dateOnly(p.reversedAt||p.createdAt), ref: p.number, type:'Receipt Reverse', debit:Number(p.amount), credit:0, details:`Reversal: ${p.reversalReason||'-'}` });
+  });
+  state.refunds.filter(r => r.studentId===studentId && ['Paid','Reversed'].includes(r.status) && dateOnly((r.status==='Reversed'?r.reversedAt:r.paidAt)||r.createdAt) <= asAt).forEach(r => {
+    if (r.status === 'Paid') entries.push({ date: dateOnly(r.paidAt||r.createdAt), ref: r.number, type:'Refund Paid', debit:Number(r.amount), credit:0, details:`${bankById(r.bankId)?.name||'Bank'} | Dr Student / Refund Control` });
+    if (r.status === 'Reversed') entries.push({ date: dateOnly(r.reversedAt||r.createdAt), ref: r.number, type:'Refund Reverse', debit:0, credit:Number(r.amount), details:`Reversal: ${r.reversalReason||'-'}` });
+  });
+  entries.sort((a,b)=> a.date.localeCompare(b.date) || a.ref.localeCompare(b.ref));
+  let running = 0;
+  const rows = entries.map(e => { running += e.debit - e.credit; return `<tr><td>${escapeHtml(e.date)}</td><td>${escapeHtml(e.ref)}</td><td>${escapeHtml(e.type)}</td><td>${currency(e.debit)}</td><td>${currency(e.credit)}</td><td>${currency(running)}</td><td>${escapeHtml(e.details)}</td></tr>`; }).join('');
+  els.ledgerSummary.innerHTML = `<strong>${escapeHtml(s.name)}</strong> • ${escapeHtml(s.admissionNo)}<br>Ledger as at ${escapeHtml(asAt)} • Current balance ${currency(running)}`;
+  els.ledgerTableBody.innerHTML = rows || `<tr><td colspan="7" class="empty-row">No posted ledger entries.</td></tr>`;
+  if (updateSection) switchSection('ledger');
 }
 
 function renderClearance() {
-  const clearedCount = state.students.filter(student => {
-    const invoiced = getStudentTotalInvoiced(student.id);
-    return invoiced > 0 && getStudentBalance(student.id) <= 0;
-  }).length;
-
-  els.clearanceSummary.innerHTML = `
-    <strong>${clearedCount}</strong> cleared students out of <strong>${state.students.length}</strong> records.
-    Students are considered cleared when their balance is zero or less after invoicing.
-  `;
-
-  const rows = state.students
-    .slice()
-    .sort((a, b) => a.name.localeCompare(b.name))
-    .map(student => {
-      const invoiced = getStudentTotalInvoiced(student.id);
-      const paid = getStudentTotalPaid(student.id);
-      const balance = invoiced - paid;
-      const status = balance <= 0 && invoiced > 0 ? '<span class="badge success">Cleared</span>' : balance > 0 ? '<span class="badge warning">Pending</span>' : '<span class="badge danger">No Invoice</span>';
-      const action = balance <= 0 && invoiced > 0
-        ? `<button class="link-btn" onclick="previewClearance('${student.id}')">Print</button>`
-        : `<button class="link-btn" onclick="showStudentProfile('${student.id}')">View</button>`;
-      return `
-        <tr>
-          <td><button class="link-btn" onclick="showStudentProfile('${student.id}')">${escapeHtml(student.name)}</button></td>
-          <td>${fmtMoney(invoiced)}</td>
-          <td>${fmtMoney(paid)}</td>
-          <td>${fmtMoney(balance)}</td>
-          <td>${status}</td>
-          <td>${action}</td>
-        </tr>
-      `;
-    })
-    .join('');
-
-  els.clearanceTableBody.innerHTML = rows || '<tr><td colspan="6" class="muted">No students available.</td></tr>';
+  let cleared = 0;
+  const rows = state.students.map(s => {
+    const t = getPostedStudentTotals(s.id);
+    const status = t.balance <= 0 ? 'Cleared' : 'Pending';
+    if (status === 'Cleared') cleared += 1;
+    return `<tr><td>${escapeHtml(s.name)}</td><td>${currency(t.invoiced)}</td><td>${currency(t.receipts)}</td><td>${currency(t.refunds)}</td><td>${currency(t.balance)}</td><td><span class="badge ${status==='Cleared'?'success':'warn'}">${status}</span></td><td><div class="actions-row"><button class="table-btn" onclick="viewStudentProfile('${s.id}')">Profile</button>${status==='Cleared'?`<button class="table-btn primary-lite" onclick="printClearance('${s.id}')">Letter</button>`:''}</div></td></tr>`;
+  }).join('');
+  els.clearanceSummary.innerHTML = `Students cleared: <strong>${cleared}</strong> of <strong>${state.students.length}</strong>. A student clears only when posted balance is zero or less.`;
+  els.clearanceTableBody.innerHTML = rows || `<tr><td colspan="7" class="empty-row">No students found.</td></tr>`;
 }
+window.printClearance = function(id){ const s = studentById(id); const t = getPostedStudentTotals(id); openModal('Clearance Letter', `<div class="doc-shell"><h1>${escapeHtml(state.settings.schoolName)}</h1><h2>Clearance Letter</h2><p>This is to certify that <strong>${escapeHtml(s.name)}</strong> (${escapeHtml(s.admissionNo)}) has no outstanding posted balance as at ${escapeHtml(new Date().toISOString().slice(0,10))}.</p><p><strong>Posted Invoices:</strong> ${currency(t.invoiced)}<br><strong>Receipts:</strong> ${currency(t.receipts)}<br><strong>Refunds:</strong> ${currency(t.refunds)}<br><strong>Balance:</strong> ${currency(t.balance)}</p><p>${escapeHtml(state.settings.footerNote)}</p></div>`); };
 
 function renderReports() {
-  const totalOutstanding = state.invoices.reduce((sum, invoice) => sum + getInvoiceBalance(invoice.id), 0);
-  const dailyTotal = state.payments
-    .filter(payment => payment.date === todayISO())
-    .reduce((sum, payment) => sum + Number(payment.amount || 0), 0);
-  const cleared = state.students.filter(student => getStudentTotalInvoiced(student.id) > 0 && getStudentBalance(student.id) <= 0).length;
-
-  els.dailyCollections.textContent = fmtMoney(dailyTotal);
-  els.reportTotalInvoices.textContent = state.invoices.length;
-  els.reportOutstanding.textContent = fmtMoney(totalOutstanding);
-  els.reportCleared.textContent = cleared;
-
-  const highestPayment = state.payments.slice().sort((a, b) => b.amount - a.amount)[0];
-  const mostRecentInvoice = state.invoices.slice().sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))[0];
+  const today = new Date().toISOString().slice(0,10);
+  const postedInvoices = state.invoices.filter(i => i.status === 'Posted');
+  const postedReceipts = state.payments.filter(p => p.status === 'Posted');
+  const cleared = state.students.filter(s => getPostedStudentTotals(s.id).balance <= 0).length;
+  const outstanding = state.students.reduce((sum,s)=>sum+Math.max(0,getPostedStudentTotals(s.id).balance),0);
+  const todayCollections = postedReceipts.filter(p => p.date === today).reduce((a,b)=>a+Number(b.amount),0);
+  els.dailyCollections.textContent = currency(todayCollections);
+  els.reportTotalInvoices.textContent = String(postedInvoices.length);
+  els.reportOutstanding.textContent = currency(outstanding);
+  els.reportCleared.textContent = String(cleared);
   const highlights = [];
-
-  if (highestPayment) {
-    highlights.push(`<div class="list-item"><div><strong>Highest payment</strong><small>${escapeHtml(getStudentById(highestPayment.studentId)?.name || '')}</small></div><div><strong>${fmtMoney(highestPayment.amount)}</strong></div></div>`);
-  }
-  if (mostRecentInvoice) {
-    highlights.push(`<div class="list-item"><div><strong>Latest invoice</strong><small>${escapeHtml(mostRecentInvoice.invoiceNumber)} • ${escapeHtml(getStudentById(mostRecentInvoice.studentId)?.name || '')}</small></div><div>${fmtMoney(mostRecentInvoice.amount)}</div></div>`);
-  }
-  highlights.push(`<div class="list-item"><div><strong>Average invoice value</strong><small>Based on all invoices</small></div><div>${fmtMoney(state.invoices.length ? state.invoices.reduce((sum, invoice) => sum + invoice.amount, 0) / state.invoices.length : 0)}</div></div>`);
-  els.reportHighlights.innerHTML = highlights.join('');
+  const topBank = [...state.banks].sort((a,b)=>bankRunningBalance(b.id)-bankRunningBalance(a.id))[0];
+  if (topBank) highlights.push(`<div class="list-item"><strong>Highest bank balance</strong><span>${escapeHtml(topBank.name)} • ${currency(bankRunningBalance(topBank.id))}</span></div>`);
+  const topStudent = [...state.students].sort((a,b)=>getPostedStudentTotals(b.id).balance-getPostedStudentTotals(a.id).balance)[0];
+  if (topStudent) highlights.push(`<div class="list-item"><strong>Largest balance</strong><span>${escapeHtml(topStudent.name)} • ${currency(getPostedStudentTotals(topStudent.id).balance)}</span></div>`);
+  const refundsPaid = state.refunds.filter(r=>r.status==='Paid').reduce((a,b)=>a+Number(b.amount),0);
+  highlights.push(`<div class="list-item"><strong>Refunds paid</strong><span>${currency(refundsPaid)}</span></div>`);
+  highlights.push(`<div class="list-item"><strong>Posted receipts</strong><span>${postedReceipts.length} transactions</span></div>`);
+  els.reportHighlights.innerHTML = highlights.join('') || 'No report highlights yet.';
 }
 
 function generateStatementPreview() {
   const studentId = els.statementStudent.value;
-  if (!studentId) {
-    showToast('Choose a student first.');
-    return;
-  }
-  const html = buildStatementHTML(studentId, els.statementDate.value || todayISO());
-  els.statementPreview.innerHTML = html;
+  if (!studentId) return showToast('Choose a student first.');
+  const s = studentById(studentId);
+  els.ledgerStudent.value = studentId;
+  els.ledgerDate.value = els.statementDate.value;
+  const entries = getStatementEntries(studentId, els.statementDate.value);
+  const totals = getPostedStudentTotals(studentId);
+  const rows = entries.map(e => `<tr><td>${escapeHtml(e.date)}</td><td>${escapeHtml(e.ref)}</td><td>${escapeHtml(e.type)}</td><td>${currency(e.debit)}</td><td>${currency(e.credit)}</td></tr>`).join('');
+  els.statementPreview.classList.remove('empty');
+  els.statementPreview.innerHTML = `<div class="doc-shell compact"><h2>Statement of Account</h2><p><strong>Student:</strong> ${escapeHtml(s.name)} (${escapeHtml(s.admissionNo)})<br><strong>Programme:</strong> ${escapeHtml(s.programme)}<br><strong>As at:</strong> ${escapeHtml(els.statementDate.value)}</p><table class="doc-table"><thead><tr><th>Date</th><th>Reference</th><th>Type</th><th>Debit</th><th>Credit</th></tr></thead><tbody>${rows || '<tr><td colspan="5">No entries</td></tr>'}</tbody></table><p><strong>Current Balance:</strong> ${currency(totals.balance)}</p></div>`;
 }
 
-function previewStatement(studentId) {
-  openModal('Student Statement', buildStatementHTML(studentId, todayISO()));
-}
-window.previewStatement = previewStatement;
-
-function previewInvoice(invoiceId) {
-  const invoice = getInvoiceById(invoiceId);
-  if (!invoice) return;
-  const student = getStudentById(invoice.studentId);
-  const paid = getInvoicePaid(invoice.id);
-  const balance = getInvoiceBalance(invoice.id);
-  const html = `
-    <div class="document">
-      <div class="document-header">
-        <div>
-          <h2>${escapeHtml(state.settings.schoolName)}</h2>
-          <p>${escapeHtml(state.settings.schoolAddress)}</p>
-          <p>${escapeHtml(state.settings.schoolPhone)} • ${escapeHtml(state.settings.schoolEmail)}</p>
-        </div>
-        <div class="document-meta">
-          <strong>INVOICE</strong>
-          <span>${escapeHtml(invoice.invoiceNumber)}</span>
-          <span>Term: ${escapeHtml(invoice.term)}</span>
-          <span>Due Date: ${escapeHtml(invoice.dueDate)}</span>
-        </div>
-      </div>
-      <p><strong>Student:</strong> ${escapeHtml(student?.name || '')}</p>
-      <p><strong>Admission No:</strong> ${escapeHtml(student?.admissionNo || '')}</p>
-      <p><strong>Programme:</strong> ${escapeHtml(student?.programme || '')}</p>
-      <table>
-        <thead>
-          <tr><th>Description</th><th>Amount</th><th>Paid</th><th>Balance</th></tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>${escapeHtml(invoice.description)}</td>
-            <td>${fmtMoney(invoice.amount)}</td>
-            <td>${fmtMoney(paid)}</td>
-            <td>${fmtMoney(balance)}</td>
-          </tr>
-        </tbody>
-      </table>
-      <div class="m-top"><strong>Notes:</strong> ${escapeHtml(invoice.notes || 'None')}</div>
-      <div class="document-footer">${escapeHtml(state.settings.footerNote)}</div>
-    </div>
-  `;
-  openModal(`Invoice ${invoice.invoiceNumber}`, html);
-}
-window.previewInvoice = previewInvoice;
-
-function previewReceipt(paymentId) {
-  const payment = getPaymentById(paymentId);
-  if (!payment) return;
-  const student = getStudentById(payment.studentId);
-  const invoice = getInvoiceById(payment.invoiceId);
-  const html = `
-    <div class="document">
-      <div class="document-header">
-        <div>
-          <h2>${escapeHtml(state.settings.schoolName)}</h2>
-          <p>${escapeHtml(state.settings.schoolAddress)}</p>
-          <p>${escapeHtml(state.settings.schoolPhone)} • ${escapeHtml(state.settings.schoolEmail)}</p>
-        </div>
-        <div class="document-meta">
-          <strong>OFFICIAL RECEIPT</strong>
-          <span>${escapeHtml(payment.receiptNumber)}</span>
-          <span>Date: ${escapeHtml(payment.date)}</span>
-          <span>Method: ${escapeHtml(payment.method)}</span>
-        </div>
-      </div>
-      <p><strong>Received From:</strong> ${escapeHtml(student?.name || '')}</p>
-      <p><strong>Admission No:</strong> ${escapeHtml(student?.admissionNo || '')}</p>
-      <p><strong>Invoice Ref:</strong> ${escapeHtml(invoice?.invoiceNumber || '')}</p>
-      <table>
-        <thead><tr><th>Description</th><th>Reference</th><th>Amount</th></tr></thead>
-        <tbody><tr><td>${escapeHtml(invoice?.description || 'Fee payment')}</td><td>${escapeHtml(payment.reference || '-')}</td><td>${fmtMoney(payment.amount)}</td></tr></tbody>
-      </table>
-      <div class="document-footer">${escapeHtml(state.settings.footerNote)}</div>
-    </div>
-  `;
-  openModal(`Receipt ${payment.receiptNumber}`, html);
-}
-window.previewReceipt = previewReceipt;
-
-function previewClearance(studentId) {
-  const student = getStudentById(studentId);
-  if (!student) return;
-  const html = `
-    <div class="document">
-      <div class="document-header">
-        <div>
-          <h2>${escapeHtml(state.settings.schoolName)}</h2>
-          <p>${escapeHtml(state.settings.schoolAddress)}</p>
-        </div>
-        <div class="document-meta">
-          <strong>CLEARANCE LETTER</strong>
-          <span>Date: ${todayISO()}</span>
-        </div>
-      </div>
-      <p>This is to certify that <strong>${escapeHtml(student.name)}</strong> (${escapeHtml(student.admissionNo)}) has cleared all billed financial obligations as at ${todayISO()}.</p>
-      <p><strong>Programme:</strong> ${escapeHtml(student.programme)}</p>
-      <p><strong>Total Invoiced:</strong> ${fmtMoney(getStudentTotalInvoiced(studentId))}</p>
-      <p><strong>Total Paid:</strong> ${fmtMoney(getStudentTotalPaid(studentId))}</p>
-      <p><strong>Outstanding Balance:</strong> ${fmtMoney(getStudentBalance(studentId))}</p>
-      <div class="document-footer">${escapeHtml(state.settings.footerNote)}</div>
-    </div>
-  `;
-  openModal(`Clearance - ${student.name}`, html);
-}
-window.previewClearance = previewClearance;
-
-function buildStatementHTML(studentId, asAtDate) {
-  const student = getStudentById(studentId);
-  if (!student) return 'Student not found.';
-  const invoices = getStudentInvoices(studentId).filter(invoice => invoice.dueDate <= asAtDate || invoice.createdAt.slice(0, 10) <= asAtDate);
-  const payments = getPaymentsForStudent(studentId).filter(payment => payment.date <= asAtDate);
-  const rows = [];
-
-  invoices.forEach(invoice => {
-    rows.push({ date: invoice.createdAt.slice(0, 10), ref: invoice.invoiceNumber, type: 'Invoice', description: invoice.description, debit: invoice.amount, credit: 0 });
-  });
-  payments.forEach(payment => {
-    const invoice = getInvoiceById(payment.invoiceId);
-    rows.push({ date: payment.date, ref: payment.receiptNumber, type: 'Payment', description: `Against ${invoice?.invoiceNumber || 'invoice'}`, debit: 0, credit: payment.amount });
-  });
-  rows.sort((a, b) => new Date(a.date) - new Date(b.date));
-
-  let running = 0;
-  const body = rows.map(row => {
-    running += Number(row.debit) - Number(row.credit);
-    return `<tr><td>${escapeHtml(row.date)}</td><td>${escapeHtml(row.ref)}</td><td>${escapeHtml(row.type)}</td><td>${escapeHtml(row.description)}</td><td>${fmtMoney(row.debit)}</td><td>${fmtMoney(row.credit)}</td><td>${fmtMoney(running)}</td></tr>`;
-  }).join('') || '<tr><td colspan="7" class="muted">No statement entries yet.</td></tr>';
-
-  return `
-    <div class="document">
-      <div class="document-header">
-        <div>
-          <h2>${escapeHtml(state.settings.schoolName)}</h2>
-          <p>Student Account Statement</p>
-        </div>
-        <div class="document-meta">
-          <span><strong>As At:</strong> ${escapeHtml(asAtDate)}</span>
-          <span><strong>Term:</strong> ${escapeHtml(state.settings.currentTerm)}</span>
-        </div>
-      </div>
-      <p><strong>Student:</strong> ${escapeHtml(student.name)}</p>
-      <p><strong>Admission No:</strong> ${escapeHtml(student.admissionNo)}</p>
-      <p><strong>Programme:</strong> ${escapeHtml(student.programme)}</p>
-      <table>
-        <thead>
-          <tr>
-            <th>Date</th><th>Reference</th><th>Type</th><th>Description</th><th>Debit</th><th>Credit</th><th>Running Balance</th>
-          </tr>
-        </thead>
-        <tbody>${body}</tbody>
-      </table>
-      <div class="m-top"><strong>Total Balance:</strong> ${fmtMoney(getStudentBalance(studentId))}</div>
-      <div class="document-footer">${escapeHtml(state.settings.footerNote)}</div>
-    </div>
-  `;
+function getStatementEntries(studentId, asAt) {
+  const out = [];
+  state.invoices.filter(i => i.studentId===studentId && i.status==='Posted' && dateOnly(i.postedAt)<=asAt).forEach(i => out.push({date: dateOnly(i.postedAt), ref:i.number, type:'Invoice', debit:Number(i.amount), credit:0}));
+  state.payments.filter(p => p.studentId===studentId && p.status==='Posted' && dateOnly(p.postedAt)<=asAt).forEach(p => out.push({date: dateOnly(p.postedAt), ref:p.number, type:'Receipt', debit:0, credit:Number(p.amount)}));
+  state.refunds.filter(r => r.studentId===studentId && r.status==='Paid' && dateOnly(r.paidAt)<=asAt).forEach(r => out.push({date: dateOnly(r.paidAt), ref:r.number, type:'Refund', debit:Number(r.amount), credit:0}));
+  return out.sort((a,b)=>a.date.localeCompare(b.date));
 }
 
-function saveSettings(event) {
-  event.preventDefault();
-  state.settings.schoolName = els.schoolName.value.trim();
-  state.settings.currentTerm = els.currentTerm.value.trim();
-  state.settings.schoolPhone = els.schoolPhone.value.trim();
-  state.settings.schoolEmail = els.schoolEmail.value.trim();
-  state.settings.currency = (els.currency.value.trim() || 'KES').toUpperCase();
-  state.settings.schoolAddress = els.schoolAddress.value.trim();
-  state.settings.footerNote = els.footerNote.value.trim();
-  addActivity('Settings updated', 'Institution branding and billing defaults updated.');
-  persist('Settings saved.');
+function renderDashboard() {
+  const studentCount = state.students.length;
+  const postedInvoices = state.invoices.filter(i=>i.status==='Posted').reduce((a,b)=>a+Number(b.amount),0);
+  const postedReceipts = state.payments.filter(p=>p.status==='Posted').reduce((a,b)=>a+Number(b.amount),0);
+  const paidRefunds = state.refunds.filter(r=>r.status==='Paid').reduce((a,b)=>a+Number(b.amount),0);
+  const outstanding = state.students.reduce((sum,s)=>sum+Math.max(0,getPostedStudentTotals(s.id).balance),0);
+  const bankBalance = state.banks.reduce((sum,b)=>sum+bankRunningBalance(b.id),0);
+  els.statStudents.textContent = String(studentCount);
+  els.statInvoiced.textContent = currency(postedInvoices);
+  els.statCollected.textContent = currency(postedReceipts);
+  els.statOutstanding.textContent = currency(outstanding);
+  els.statBankBalance.textContent = currency(bankBalance);
+  els.statRefunds.textContent = currency(paidRefunds);
+  renderOutstandingList();
+  renderChart();
+}
+
+function renderOutstandingList() {
+  const top = [...state.students].map(s => ({ s, bal: getPostedStudentTotals(s.id).balance })).filter(x => x.bal > 0).sort((a,b)=>b.bal-a.bal).slice(0,6);
+  els.outstandingList.innerHTML = top.length ? top.map(({s,bal}) => `<div class="list-item"><strong>${escapeHtml(s.name)}</strong><span>${currency(bal)}</span></div>`).join('') : 'No balances yet.';
+}
+function renderActivity() {
+  const items = state.activities.slice(0,8);
+  els.activityList.innerHTML = items.length ? items.map(a => `<div class="list-item"><strong>${escapeHtml(a.title)}</strong><span>${escapeHtml(new Date(a.date).toLocaleString())} • ${escapeHtml(a.details)}</span></div>`).join('') : 'No activity yet.';
+}
+function renderAuditTrail() {
+  const items = state.activities.filter(a => a.type === 'audit').slice(0,15);
+  els.auditTrailList.innerHTML = items.length ? items.map(a => `<div class="list-item"><strong>${escapeHtml(a.title)}</strong><span>${escapeHtml(new Date(a.date).toLocaleString())} • ${escapeHtml(a.details)}</span></div>`).join('') : 'No audit actions yet.';
+}
+
+function renderChart() {
+  const ctx = els.chart.getContext('2d');
+  const w = els.chart.width; const h = els.chart.height;
+  ctx.clearRect(0,0,w,h);
+  const months = getRecentMonths(6);
+  const data = months.map(m => state.payments.filter(p => p.status==='Posted' && (p.postedAt||'').slice(0,7) === m).reduce((a,b)=>a+Number(b.amount),0));
+  const max = Math.max(...data, 1);
+  const peakIndex = data.indexOf(Math.max(...data));
+  els.collectionPeakLabel.textContent = data.some(v => v>0) ? `${months[peakIndex]} peak ${currency(data[peakIndex])}` : 'No data';
+  ctx.fillStyle = '#ffffff'; ctx.fillRect(0,0,w,h);
+  const pad = 45; const base = h-40;
+  ctx.strokeStyle = '#d5def3'; ctx.lineWidth = 1;
+  for(let i=0;i<5;i++){ const y = 30 + i*((base-30)/4); ctx.beginPath(); ctx.moveTo(pad,y); ctx.lineTo(w-20,y); ctx.stroke(); }
+  ctx.strokeStyle = '#2254f4'; ctx.lineWidth = 3; ctx.beginPath();
+  data.forEach((v,i)=>{ const x = pad + i*((w-pad-35)/(data.length-1||1)); const y = base - (v/max)*(base-50); if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y); }); ctx.stroke();
+  ctx.fillStyle = '#2254f4'; data.forEach((v,i)=>{ const x = pad + i*((w-pad-35)/(data.length-1||1)); const y = base - (v/max)*(base-50); ctx.beginPath(); ctx.arc(x,y,4,0,Math.PI*2); ctx.fill(); ctx.fillText(months[i].slice(5), x-8, h-14); });
+}
+
+function saveSettings(e) {
+  e.preventDefault();
+  state.settings = { schoolName: els.schoolName.value.trim(), currentTerm: els.currentTerm.value.trim(), schoolPhone: els.schoolPhone.value.trim(), schoolEmail: els.schoolEmail.value.trim(), currency: els.currency.value.trim() || 'KES', schoolAddress: els.schoolAddress.value.trim(), footerNote: els.footerNote.value.trim() };
+  syncBranding();
+  logActivity('Settings saved', 'Institution settings were updated.');
+  persist('Settings updated.');
   renderAll();
 }
 
-function seedSampleData() {
-  state.students = [
-    { id: uid('STD'), admissionNo: 'EDU/2026/001', name: 'Amina Yusuf', programme: 'BSc Computer Science', yearOfStudy: '2', phone: '0712345678', email: 'amina@example.com', status: 'Active', guardianName: 'Mr. Yusuf', notes: 'On campus', createdAt: new Date('2026-01-12').toISOString() },
-    { id: uid('STD'), admissionNo: 'EDU/2026/002', name: 'Brian Otieno', programme: 'Diploma in Business', yearOfStudy: '1', phone: '0722000111', email: 'brian@example.com', status: 'Active', guardianName: 'Mrs. Otieno', notes: 'Day scholar', createdAt: new Date('2026-01-18').toISOString() },
-    { id: uid('STD'), admissionNo: 'EDU/2026/003', name: 'Caroline Njeri', programme: 'BA Education', yearOfStudy: '3', phone: '0733555777', email: 'caroline@example.com', status: 'Active', guardianName: 'Mr. Njeri', notes: 'Returning student', createdAt: new Date('2026-01-20').toISOString() }
-  ];
-
-  state.invoices = [
-    { id: uid('INV'), studentId: state.students[0].id, invoiceNumber: nextNumber('INV', 1001), description: 'Tuition Fees', term: 'Term 1', amount: 52000, dueDate: '2026-02-15', notes: 'Semester fees', createdAt: new Date('2026-02-01').toISOString() },
-    { id: uid('INV'), studentId: state.students[1].id, invoiceNumber: nextNumber('INV', 1002), description: 'Tuition Fees', term: 'Term 1', amount: 40000, dueDate: '2026-02-15', notes: 'Semester fees', createdAt: new Date('2026-02-02').toISOString() },
-    { id: uid('INV'), studentId: state.students[2].id, invoiceNumber: nextNumber('INV', 1003), description: 'Tuition + Exams', term: 'Term 1', amount: 61500, dueDate: '2026-02-18', notes: 'Fees and exam card', createdAt: new Date('2026-02-03').toISOString() }
-  ];
-
-  state.payments = [
-    { id: uid('PAY'), studentId: state.students[0].id, invoiceId: state.invoices[0].id, receiptNumber: nextNumber('RCPT', 2001), method: 'Bank', amount: 30000, date: '2026-02-10', reference: 'BNK44551', createdAt: new Date('2026-02-10').toISOString() },
-    { id: uid('PAY'), studentId: state.students[1].id, invoiceId: state.invoices[1].id, receiptNumber: nextNumber('RCPT', 2002), method: 'Mobile Money', amount: 40000, date: '2026-02-11', reference: 'MMP90012', createdAt: new Date('2026-02-11').toISOString() },
-    { id: uid('PAY'), studentId: state.students[2].id, invoiceId: state.invoices[2].id, receiptNumber: nextNumber('RCPT', 2003), method: 'Cash', amount: 20000, date: '2026-02-12', reference: 'CSH102', createdAt: new Date('2026-02-12').toISOString() }
-  ];
-
-  state.activities = [];
-  addActivity('Sample data loaded', 'Demo students, invoices and receipts were added.');
-  persist('Sample data loaded.');
-  renderAll();
-  showStudentProfile(state.students[0].id);
-}
-
-function resetSystem() {
-  const confirmed = window.confirm('This will clear students, invoices, payments and activity logs. Continue?');
-  if (!confirmed) return;
-  const currentUser = state.auth.currentUser;
-  const settings = { ...state.settings };
-  const users = state.auth.users;
-  Object.assign(state, structuredClone(defaultState));
-  state.auth.currentUser = currentUser;
-  state.auth.users = users;
-  state.settings = settings;
-  persist('System data reset.');
-  renderAll();
-  showStudentProfile('');
-  setDefaultDates();
-}
+function logActivity(title, details, type='activity') { state.activities.unshift({ id: uid('ACT'), title, details, type, date: new Date().toISOString() }); state.activities = state.activities.slice(0,200); }
+function addAudit(title, details) { logActivity(title, details, 'audit'); }
+function currentUsername(){ return state.auth.currentUser?.username || 'system'; }
+function statusTone(status){ return ({Draft:'neutral', Posted:'success', Reversed:'danger', Approved:'info', Paid:'success', Active:'success', Inactive:'neutral'})[status] || 'neutral'; }
+function dateOnly(v){ return (v||'').slice(0,10); }
+function getRecentMonths(count){ const arr=[]; const d=new Date(); d.setDate(1); for(let i=count-1;i>=0;i--){ const x=new Date(d.getFullYear(), d.getMonth()-i, 1); arr.push(x.toISOString().slice(0,7)); } return arr; }
 
 function exportCSV(type) {
-  let rows = [];
-  if (type === 'students') {
-    rows = [['Admission No', 'Name', 'Programme', 'Year', 'Phone', 'Email', 'Status', 'Balance']].concat(
-      state.students.map(student => [student.admissionNo, student.name, student.programme, student.yearOfStudy, student.phone || '', student.email || '', student.status || '', getStudentBalance(student.id)])
-    );
-  }
-  if (type === 'invoices') {
-    rows = [['Invoice No', 'Student', 'Description', 'Term', 'Amount', 'Paid', 'Balance', 'Due Date']].concat(
-      state.invoices.map(invoice => [invoice.invoiceNumber, getStudentById(invoice.studentId)?.name || '', invoice.description, invoice.term, invoice.amount, getInvoicePaid(invoice.id), getInvoiceBalance(invoice.id), invoice.dueDate])
-    );
-  }
-  if (type === 'payments') {
-    rows = [['Receipt No', 'Student', 'Invoice', 'Method', 'Amount', 'Date', 'Reference']].concat(
-      state.payments.map(payment => [payment.receiptNumber, getStudentById(payment.studentId)?.name || '', getInvoiceById(payment.invoiceId)?.invoiceNumber || '', payment.method, payment.amount, payment.date, payment.reference || ''])
-    );
-  }
-
-  const csv = rows.map(row => row.map(csvEscape).join(',')).join('\n');
-  downloadFile(csv, `${type}_${todayISO()}.csv`, 'text/csv;charset=utf-8;');
-}
-
-function exportBackup() {
-  downloadFile(JSON.stringify(state, null, 2), `edubill_backup_${todayISO()}.json`, 'application/json');
-}
-
-function importBackup(event) {
-  const [file] = event.target.files || [];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = e => {
-    try {
-      const parsed = JSON.parse(e.target.result);
-      const merged = {
-        ...structuredClone(defaultState),
-        ...parsed,
-        settings: { ...structuredClone(defaultState).settings, ...(parsed.settings || {}) },
-        auth: { ...structuredClone(defaultState).auth, ...(parsed.auth || {}) }
-      };
-      Object.assign(state, merged);
-      if (!state.auth.currentUser) state.auth.currentUser = { username: 'admin', role: 'Administrator' };
-      addActivity('Backup imported', 'A saved system snapshot was restored.');
-      persist('Backup imported.');
-      renderAll();
-    } catch {
-      showToast('Invalid backup file.');
-    }
+  const map = {
+    students: state.students.map(s => ({admissionNo:s.admissionNo,name:s.name,programme:s.programme,year:s.year,status:s.status,balance:getPostedStudentTotals(s.id).balance})),
+    invoices: state.invoices.map(i => ({number:i.number,student:studentById(i.studentId)?.name,amount:i.amount,status:i.status,paid:invoicePaidAmount(i.id),balance:Math.max(0,invoiceBalance(i.id))})),
+    payments: state.payments.map(p => ({number:p.number,student:studentById(p.studentId)?.name,invoice:invoiceById(p.invoiceId)?.number,bank:bankById(p.bankId)?.name,amount:p.amount,status:p.status,date:p.date})),
+    refunds: state.refunds.map(r => ({number:r.number,student:studentById(r.studentId)?.name,bank:bankById(r.bankId)?.name,amount:r.amount,status:r.status,date:r.date,reason:r.reason}))
   };
-  reader.readAsText(file);
-  event.target.value = '';
+  const rows = map[type] || [];
+  if (!rows.length) return showToast(`No ${type} data to export.`);
+  const headers = Object.keys(rows[0]);
+  const csv = [headers.join(',')].concat(rows.map(row => headers.map(h => JSON.stringify(row[h] ?? '')).join(','))).join('\n');
+  downloadBlob(csv, `${type}.csv`, 'text/csv;charset=utf-8;');
 }
+function exportBackup(){ downloadBlob(JSON.stringify(state,null,2), 'edubill_pro_finance_backup.json', 'application/json'); }
+function importBackup(e){ const file=e.target.files[0]; if(!file) return; const reader=new FileReader(); reader.onload=()=>{ try { const parsed=JSON.parse(reader.result); localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...structuredClone(defaultState), ...parsed })); location.reload(); } catch { showToast('Invalid backup file.'); } }; reader.readAsText(file); }
+function resetSystem(){ if(!confirm('Reset all demo data?')) return; localStorage.removeItem(STORAGE_KEY); location.reload(); }
+function downloadBlob(content, filename, type){ const blob = new Blob([content], {type}); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href=url; a.download=filename; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url); }
 
-function drawCollectionsChart() {
-  const canvas = els.chart;
-  if (!canvas) return;
-  const ctx = canvas.getContext('2d');
-  const width = canvas.width;
-  const height = canvas.height;
-  ctx.clearRect(0, 0, width, height);
+function openModal(title, html){ els.modalTitle.textContent = title; els.modalBody.innerHTML = html; els.modal.classList.remove('hidden'); }
+function closeModal(){ els.modal.classList.add('hidden'); }
+function showToast(message){ els.toast.textContent = message; els.toast.classList.add('show'); clearTimeout(showToast.t); showToast.t = setTimeout(()=>els.toast.classList.remove('show'), 2400); }
 
-  const series = getMonthlyCollections();
-  const values = series.map(item => item.total);
-  const max = Math.max(...values, 1);
-  const padding = { top: 28, right: 24, bottom: 36, left: 56 };
-  const chartWidth = width - padding.left - padding.right;
-  const chartHeight = height - padding.top - padding.bottom;
-
-  ctx.fillStyle = '#f8fbff';
-  ctx.fillRect(0, 0, width, height);
-
-  ctx.strokeStyle = '#dbe4f0';
-  ctx.lineWidth = 1;
-  for (let i = 0; i <= 4; i++) {
-    const y = padding.top + (chartHeight / 4) * i;
-    ctx.beginPath();
-    ctx.moveTo(padding.left, y);
-    ctx.lineTo(width - padding.right, y);
-    ctx.stroke();
-  }
-
-  ctx.strokeStyle = '#2563eb';
-  ctx.lineWidth = 3;
-  ctx.beginPath();
-
-  series.forEach((item, index) => {
-    const x = padding.left + (chartWidth / (series.length - 1 || 1)) * index;
-    const y = padding.top + chartHeight - (item.total / max) * chartHeight;
-    if (index === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
-  });
-  ctx.stroke();
-
-  series.forEach((item, index) => {
-    const x = padding.left + (chartWidth / (series.length - 1 || 1)) * index;
-    const y = padding.top + chartHeight - (item.total / max) * chartHeight;
-    ctx.fillStyle = '#ffffff';
-    ctx.beginPath();
-    ctx.arc(x, y, 6, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.strokeStyle = '#0891b2';
-    ctx.lineWidth = 3;
-    ctx.stroke();
-
-    ctx.fillStyle = '#64748b';
-    ctx.font = '12px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText(item.label, x, height - 12);
-
-    ctx.fillStyle = '#102033';
-    ctx.font = '12px sans-serif';
-    ctx.fillText(shortMoney(item.total), x, Math.max(y - 12, 16));
-  });
-
-  const peak = series.slice().sort((a, b) => b.total - a.total)[0];
-  els.collectionPeakLabel.textContent = peak && peak.total > 0 ? `Peak: ${peak.label} ${fmtMoney(peak.total)}` : 'No collections yet';
-}
-
-function getMonthlyCollections() {
-  const months = [];
-  const base = new Date();
-  for (let i = 5; i >= 0; i--) {
-    const date = new Date(base.getFullYear(), base.getMonth() - i, 1);
-    const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-    const label = date.toLocaleString(undefined, { month: 'short' });
-    const total = state.payments
-      .filter(payment => payment.date?.startsWith(key))
-      .reduce((sum, payment) => sum + Number(payment.amount || 0), 0);
-    months.push({ key, label, total });
-  }
-  return months;
-}
-
-function openModal(title, html) {
-  els.modalTitle.textContent = title;
-  els.modalBody.innerHTML = html;
-  els.modal.classList.remove('hidden');
-}
-
-function closeModal() {
-  els.modal.classList.add('hidden');
-}
-
-function addActivity(title, description) {
-  state.activities.unshift({ id: uid('ACT'), title, description, time: new Date().toISOString() });
-  state.activities = state.activities.slice(0, 30);
-}
-
-function getStudentById(id) {
-  return state.students.find(student => student.id === id);
-}
-
-function getInvoiceById(id) {
-  return state.invoices.find(invoice => invoice.id === id);
-}
-
-function getPaymentById(id) {
-  return state.payments.find(payment => payment.id === id);
-}
-
-function getStudentInvoices(studentId) {
-  return state.invoices.filter(invoice => invoice.studentId === studentId);
-}
-
-function getPaymentsForStudent(studentId) {
-  return state.payments.filter(payment => payment.studentId === studentId);
-}
-
-function getStudentTotalInvoiced(studentId) {
-  return getStudentInvoices(studentId).reduce((sum, invoice) => sum + Number(invoice.amount || 0), 0);
-}
-
-function getStudentTotalPaid(studentId) {
-  return getPaymentsForStudent(studentId).reduce((sum, payment) => sum + Number(payment.amount || 0), 0);
-}
-
-function getStudentBalance(studentId) {
-  return getStudentTotalInvoiced(studentId) - getStudentTotalPaid(studentId);
-}
-
-function getInvoicePaid(invoiceId) {
-  return state.payments.filter(payment => payment.invoiceId === invoiceId).reduce((sum, payment) => sum + Number(payment.amount || 0), 0);
-}
-
-function getInvoiceBalance(invoiceId) {
-  const invoice = getInvoiceById(invoiceId);
-  if (!invoice) return 0;
-  return Number(invoice.amount || 0) - getInvoicePaid(invoiceId);
-}
-
-function nextNumber(prefix, seed = null) {
-  if (seed !== null) return `${prefix}-${seed}`;
-  const source = prefix === 'INV' ? state.invoices : prefix === 'RCPT' ? state.payments : [];
-  const numbers = source.map(item => Number(String(prefix === 'INV' ? item.invoiceNumber : item.receiptNumber).split('-').pop())).filter(num => !Number.isNaN(num));
-  const next = (numbers.length ? Math.max(...numbers) : prefix === 'INV' ? 1000 : 2000) + 1;
-  return `${prefix}-${next}`;
-}
-
-function uid(prefix) {
-  return `${prefix}-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
-}
-
-function fmtMoney(value) {
-  return `${state.settings.currency || 'KES'} ${Number(value || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-}
-
-function shortMoney(value) {
-  const num = Number(value || 0);
-  if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
-  if (num >= 1000) return `${(num / 1000).toFixed(0)}K`;
-  return `${num.toFixed(0)}`;
-}
-
-function todayISO() {
-  return new Date().toISOString().split('T')[0];
-}
-
-function showToast(message) {
-  els.toast.textContent = message;
-  els.toast.classList.add('show');
-  clearTimeout(showToast.timer);
-  showToast.timer = setTimeout(() => els.toast.classList.remove('show'), 2400);
-}
-
-function escapeHtml(value) {
-  return String(value ?? '')
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
-}
-
-function csvEscape(value) {
-  const string = String(value ?? '');
-  return `"${string.replace(/"/g, '""')}"`;
-}
-
-function downloadFile(content, filename, mimeType) {
-  const blob = new Blob([content], { type: mimeType });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = filename;
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-  URL.revokeObjectURL(url);
+function seedSampleData() {
+  if (state.students.length || state.invoices.length || state.banks.length) { if (!confirm('Sample data will be added to current data. Continue?')) return; }
+  const s1 = { id: uid('STD'), admissionNo:'EDU/2026/001', name:'Achieng Odhiambo', programme:'BSc ICT', year:'2', phone:'0712345678', email:'achieng@example.com', status:'Active', guardian:'Odhiambo', notes:'Government sponsored', createdAt:new Date().toISOString() };
+  const s2 = { id: uid('STD'), admissionNo:'EDU/2026/002', name:'Brian Otieno', programme:'BCom Finance', year:'3', phone:'0723456789', email:'brian@example.com', status:'Active', guardian:'Atieno', notes:'Evening programme', createdAt:new Date().toISOString() };
+  const b1 = { id: uid('BNK'), name:'KCB Main Collection', accountNo:'1100223344', branch:'Bondo', type:'Collection', status:'Active', openingBalance:150000, notes:'Main tuition collection account', createdAt:new Date().toISOString() };
+  const b2 = { id: uid('BNK'), name:'Equity Fees Account', accountNo:'5566778899', branch:'Siaya', type:'Collection', status:'Active', openingBalance:90000, notes:'Alternative collection account', createdAt:new Date().toISOString() };
+  state.students.unshift(s1,s2); state.banks.unshift(b1,b2);
+  const i1 = { id: uid('INV'), number: nextNumber('INV', state.invoices.length+1), studentId:s1.id, description:'Semester Fees', term:'Term 1', amount:30000, dueDate:new Date(Date.now()+10*86400000).toISOString().slice(0,10), notes:'Posted sample invoice', status:'Posted', createdAt:new Date().toISOString(), postedAt:new Date().toISOString() };
+  const i2 = { id: uid('INV'), number: nextNumber('INV', state.invoices.length+2), studentId:s2.id, description:'Semester Fees', term:'Term 1', amount:28000, dueDate:new Date(Date.now()+10*86400000).toISOString().slice(0,10), notes:'Posted sample invoice', status:'Posted', createdAt:new Date().toISOString(), postedAt:new Date().toISOString() };
+  state.invoices.unshift(i1,i2);
+  const p1 = { id: uid('RCT'), number: nextNumber('RCT', state.payments.length+1), studentId:s1.id, invoiceId:i1.id, bankId:b1.id, method:'Bank', amount:20000, date:new Date().toISOString().slice(0,10), reference:'SLIP001', narration:'Initial payment', status:'Posted', createdAt:new Date().toISOString(), postedAt:new Date().toISOString() };
+  const p2 = { id: uid('RCT'), number: nextNumber('RCT', state.payments.length+2), studentId:s2.id, invoiceId:i2.id, bankId:b2.id, method:'Bank', amount:30000, date:new Date().toISOString().slice(0,10), reference:'SLIP002', narration:'Overpayment sample', status:'Posted', createdAt:new Date().toISOString(), postedAt:new Date().toISOString() };
+  state.payments.unshift(p1,p2);
+  const r1 = { id: uid('RFD'), number: nextNumber('RFD', state.refunds.length+1), studentId:s2.id, bankId:b2.id, amount:2000, date:new Date().toISOString().slice(0,10), reason:'Approved overpayment refund', notes:'Sample refund', status:'Paid', createdAt:new Date().toISOString(), approvedAt:new Date().toISOString(), paidAt:new Date().toISOString() };
+  state.refunds.unshift(r1);
+  addAudit('Sample data loaded', 'Banks, invoices, receipts and refund workflow added.');
+  logActivity('Sample data loaded', 'Demo data populated successfully.');
+  persist('Sample data loaded.');
+  renderAll();
 }

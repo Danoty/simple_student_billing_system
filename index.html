@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>EduBill Pro | Student Billing System</title>
+  <title>EduBill Pro Finance | Student Billing System</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -12,15 +12,15 @@
       <div class="auth-brand">
         <div class="auth-logo">E</div>
         <div>
-          <h1>EduBill Pro</h1>
-          <p>Student billing, receipting, clearance and reporting.</p>
+          <h1>EduBill Pro Finance</h1>
+          <p>Student billing, posting, receipting, refunds, reversals and audit trail.</p>
         </div>
       </div>
 
       <div class="auth-highlight">
         <div>
-          <strong>Top-tier demo improvements</strong>
-          <span>Premium login, polished dashboard, printable documents, statement generation, analytics, settings and a cleaner modern layout.</span>
+          <strong>Version 4 Finance Workflow</strong>
+          <span>Banks, posted invoices, bank-based receipts, refunds, reversals, ledger movement and stronger controls.</span>
         </div>
       </div>
 
@@ -49,7 +49,7 @@
         <div class="brand">
           <div class="brand-mark">E</div>
           <div>
-            <h1 id="brandSchoolName">EduBill Pro</h1>
+            <h1 id="brandSchoolName">EduBill Pro Finance</h1>
             <p id="brandTerm">Current Term</p>
           </div>
         </div>
@@ -57,8 +57,11 @@
         <nav class="nav">
           <button class="nav-link active" data-section="dashboard">Dashboard</button>
           <button class="nav-link" data-section="students">Students</button>
-          <button class="nav-link" data-section="invoices">Invoicing</button>
-          <button class="nav-link" data-section="payments">Receipting</button>
+          <button class="nav-link" data-section="banks">Banks</button>
+          <button class="nav-link" data-section="invoices">Invoices</button>
+          <button class="nav-link" data-section="payments">Receipts</button>
+          <button class="nav-link" data-section="refunds">Refunds</button>
+          <button class="nav-link" data-section="ledger">Ledger</button>
           <button class="nav-link" data-section="clearance">Clearance</button>
           <button class="nav-link" data-section="reports">Reports</button>
           <button class="nav-link" data-section="settings">Settings</button>
@@ -81,7 +84,7 @@
       <header class="topbar">
         <div>
           <h2 id="pageTitle">Dashboard</h2>
-          <p class="muted" id="pageSubtitle">A premium web-based billing demo ready for branding, customization and deployment.</p>
+          <p class="muted" id="pageSubtitle">A premium web-based finance demo with posting, banks, refunds and reversals.</p>
         </div>
         <div class="topbar-actions">
           <div class="search-chip">
@@ -98,26 +101,36 @@
       </header>
 
       <section id="dashboard" class="section active">
-        <div class="stats-grid">
+        <div class="stats-grid six">
           <article class="stat-card accent-blue">
             <span>Total Students</span>
             <h3 id="statStudents">0</h3>
             <small>Registered records</small>
           </article>
           <article class="stat-card accent-cyan">
-            <span>Total Invoiced</span>
+            <span>Posted Invoices</span>
             <h3 id="statInvoiced">KES 0.00</h3>
-            <small>All invoices combined</small>
+            <small>Official billed amount</small>
           </article>
           <article class="stat-card accent-green">
-            <span>Total Collected</span>
+            <span>Collected</span>
             <h3 id="statCollected">KES 0.00</h3>
-            <small>Recorded payments</small>
+            <small>Posted receipts</small>
           </article>
           <article class="stat-card accent-amber">
             <span>Outstanding</span>
             <h3 id="statOutstanding">KES 0.00</h3>
             <small>Open balances</small>
+          </article>
+          <article class="stat-card accent-green">
+            <span>Bank Balance</span>
+            <h3 id="statBankBalance">KES 0.00</h3>
+            <small>Total posted cash at bank</small>
+          </article>
+          <article class="stat-card accent-red">
+            <span>Refunds Paid</span>
+            <h3 id="statRefunds">KES 0.00</h3>
+            <small>Posted refunds</small>
           </article>
         </div>
 
@@ -126,7 +139,7 @@
             <div class="panel-header inline-between">
               <div>
                 <h3>Collections Trend</h3>
-                <p class="muted small">Last 6 months overview</p>
+                <p class="muted small">Last 6 months posted receipts</p>
               </div>
               <span class="badge info" id="collectionPeakLabel">No data</span>
             </div>
@@ -142,9 +155,11 @@
             </div>
             <div class="quick-actions-grid">
               <button class="quick-action" data-jump="students">Add Student</button>
+              <button class="quick-action" data-jump="banks">Add Bank</button>
               <button class="quick-action" data-jump="invoices">Create Invoice</button>
-              <button class="quick-action" data-jump="payments">Record Payment</button>
-              <button class="quick-action" data-jump="reports">Generate Statement</button>
+              <button class="quick-action" data-jump="payments">Post Receipt</button>
+              <button class="quick-action" data-jump="refunds">Create Refund</button>
+              <button class="quick-action" data-jump="ledger">Open Ledger</button>
             </div>
           </article>
         </div>
@@ -153,7 +168,7 @@
           <article class="panel">
             <div class="panel-header inline-between">
               <div>
-                <h3>Outstanding Students</h3>
+                <h3>Top Outstanding Students</h3>
                 <p class="muted small">Largest balances first</p>
               </div>
             </div>
@@ -164,7 +179,7 @@
             <div class="panel-header inline-between">
               <div>
                 <h3>Recent Activity</h3>
-                <p class="muted small">Latest system actions</p>
+                <p class="muted small">Latest workflow actions</p>
               </div>
             </div>
             <div id="activityList" class="list-stack empty">No activity yet.</div>
@@ -175,7 +190,7 @@
       <section id="students" class="section">
         <div class="panel-grid two uneven">
           <article class="panel">
-            <div class="panel-header inline-between">
+            <div class="panel-header">
               <div>
                 <h3>Add / Update Student</h3>
                 <p class="muted small">Maintain student profiles</p>
@@ -199,12 +214,7 @@
                 <label>Year</label>
                 <select id="yearOfStudy" required>
                   <option value="">Select year</option>
-                  <option>1</option>
-                  <option>2</option>
-                  <option>3</option>
-                  <option>4</option>
-                  <option>5</option>
-                  <option>6</option>
+                  <option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option>
                 </select>
               </div>
               <div>
@@ -217,11 +227,7 @@
               </div>
               <div>
                 <label>Status</label>
-                <select id="studentStatus">
-                  <option value="Active">Active</option>
-                  <option value="Completed">Completed</option>
-                  <option value="Deferred">Deferred</option>
-                </select>
+                <select id="studentStatus"><option>Active</option><option>Completed</option><option>Deferred</option></select>
               </div>
               <div>
                 <label>Guardian</label>
@@ -248,16 +254,7 @@
             </div>
             <div class="table-wrap">
               <table>
-                <thead>
-                  <tr>
-                    <th>Adm No.</th>
-                    <th>Name</th>
-                    <th>Programme</th>
-                    <th>Year</th>
-                    <th>Balance</th>
-                    <th>Action</th>
-                  </tr>
-                </thead>
+                <thead><tr><th>Adm No.</th><th>Name</th><th>Programme</th><th>Year</th><th>Balance</th><th>Action</th></tr></thead>
                 <tbody id="studentsTableBody"></tbody>
               </table>
             </div>
@@ -265,74 +262,47 @@
         </div>
       </section>
 
+      <section id="banks" class="section">
+        <div class="panel-grid two uneven">
+          <article class="panel">
+            <div class="panel-header"><div><h3>Bank Setup</h3><p class="muted small">Create and maintain collection banks</p></div></div>
+            <form id="bankForm" class="form-grid">
+              <input type="hidden" id="bankId" />
+              <div><label>Bank Name</label><input type="text" id="bankName" required /></div>
+              <div><label>Account Number</label><input type="text" id="bankAccount" required /></div>
+              <div><label>Branch</label><input type="text" id="bankBranch" required /></div>
+              <div><label>Account Type</label><select id="bankType"><option>Collection</option><option>Current</option><option>Savings</option></select></div>
+              <div><label>Status</label><select id="bankStatus"><option>Active</option><option>Inactive</option></select></div>
+              <div><label>Opening Balance</label><input type="number" id="bankOpeningBalance" min="0" step="0.01" value="0" /></div>
+              <div class="full-width"><label>Notes</label><textarea id="bankNotes" rows="3"></textarea></div>
+              <div class="form-actions full-width"><button class="btn primary" type="submit">Save Bank</button><button class="btn secondary" type="button" id="clearBankBtn">Clear</button></div>
+            </form>
+          </article>
+          <article class="panel">
+            <div class="panel-header inline-between wrap-gap"><div><h3>Bank Register</h3><p class="muted small">Receipts post into selected bank</p></div><input type="search" id="bankSearch" placeholder="Search bank..." /></div>
+            <div class="table-wrap"><table><thead><tr><th>Bank</th><th>Account</th><th>Branch</th><th>Status</th><th>Balance</th><th>Action</th></tr></thead><tbody id="banksTableBody"></tbody></table></div>
+          </article>
+        </div>
+      </section>
+
       <section id="invoices" class="section">
         <div class="panel-grid two uneven">
           <article class="panel">
-            <div class="panel-header inline-between">
-              <div>
-                <h3>Create Invoice</h3>
-                <p class="muted small">Issue fees and other charges</p>
-              </div>
-            </div>
+            <div class="panel-header"><div><h3>Create Invoice</h3><p class="muted small">Draft first, then post to make it official</p></div></div>
             <form id="invoiceForm" class="form-grid">
-              <div>
-                <label>Student</label>
-                <select id="invoiceStudent" required></select>
-              </div>
-              <div>
-                <label>Invoice Number</label>
-                <input type="text" id="invoiceNumber" readonly />
-              </div>
-              <div>
-                <label>Description</label>
-                <input type="text" id="invoiceDescription" placeholder="Semester fees" required />
-              </div>
-              <div>
-                <label>Term / Semester</label>
-                <input type="text" id="invoiceTerm" placeholder="Term 1" required />
-              </div>
-              <div>
-                <label>Amount</label>
-                <input type="number" id="invoiceAmount" min="0" step="0.01" required />
-              </div>
-              <div>
-                <label>Due Date</label>
-                <input type="date" id="invoiceDueDate" required />
-              </div>
-              <div class="full-width">
-                <label>Invoice Notes</label>
-                <textarea id="invoiceNotes" rows="3" placeholder="Optional notes for the invoice"></textarea>
-              </div>
-              <div class="form-actions full-width">
-                <button class="btn primary" type="submit">Create Invoice</button>
-              </div>
+              <div><label>Student</label><select id="invoiceStudent" required></select></div>
+              <div><label>Invoice Number</label><input type="text" id="invoiceNumber" readonly /></div>
+              <div><label>Description</label><input type="text" id="invoiceDescription" placeholder="Semester fees" required /></div>
+              <div><label>Term / Semester</label><input type="text" id="invoiceTerm" placeholder="Term 1" required /></div>
+              <div><label>Amount</label><input type="number" id="invoiceAmount" min="0" step="0.01" required /></div>
+              <div><label>Due Date</label><input type="date" id="invoiceDueDate" required /></div>
+              <div class="full-width"><label>Invoice Notes</label><textarea id="invoiceNotes" rows="3" placeholder="Optional notes"></textarea></div>
+              <div class="form-actions full-width"><button class="btn primary" type="submit">Save Draft Invoice</button></div>
             </form>
           </article>
-
           <article class="panel">
-            <div class="panel-header inline-between wrap-gap">
-              <div>
-                <h3>Issued Invoices</h3>
-                <p class="muted small">Printable and traceable</p>
-              </div>
-              <input type="search" id="invoiceSearch" placeholder="Search invoice..." />
-            </div>
-            <div class="table-wrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Invoice No.</th>
-                    <th>Student</th>
-                    <th>Amount</th>
-                    <th>Paid</th>
-                    <th>Balance</th>
-                    <th>Status</th>
-                    <th>Action</th>
-                  </tr>
-                </thead>
-                <tbody id="invoicesTableBody"></tbody>
-              </table>
-            </div>
+            <div class="panel-header inline-between wrap-gap"><div><h3>Invoice Register</h3><p class="muted small">Post, preview and reverse</p></div><input type="search" id="invoiceSearch" placeholder="Search invoice..." /></div>
+            <div class="table-wrap"><table><thead><tr><th>Invoice No.</th><th>Student</th><th>Amount</th><th>Paid</th><th>Balance</th><th>Status</th><th>Action</th></tr></thead><tbody id="invoicesTableBody"></tbody></table></div>
           </article>
         </div>
       </section>
@@ -340,76 +310,64 @@
       <section id="payments" class="section">
         <div class="panel-grid two uneven">
           <article class="panel">
-            <div class="panel-header inline-between">
-              <div>
-                <h3>Record Payment</h3>
-                <p class="muted small">Generate receipt instantly</p>
-              </div>
-            </div>
+            <div class="panel-header"><div><h3>Record Receipt</h3><p class="muted small">Select bank, then post receipt to reduce student balance</p></div></div>
             <form id="paymentForm" class="form-grid">
-              <div>
-                <label>Student</label>
-                <select id="paymentStudent" required></select>
-              </div>
-              <div>
-                <label>Invoice</label>
-                <select id="paymentInvoice" required></select>
-              </div>
-              <div>
-                <label>Receipt Number</label>
-                <input type="text" id="receiptNumber" readonly />
-              </div>
-              <div>
-                <label>Payment Method</label>
-                <select id="paymentMethod" required>
-                  <option value="Cash">Cash</option>
-                  <option value="Bank">Bank</option>
-                  <option value="Mobile Money">Mobile Money</option>
-                  <option value="Cheque">Cheque</option>
-                </select>
-              </div>
-              <div>
-                <label>Amount</label>
-                <input type="number" id="paymentAmount" min="0" step="0.01" required />
-              </div>
-              <div>
-                <label>Date</label>
-                <input type="date" id="paymentDate" required />
-              </div>
-              <div class="full-width">
-                <label>Reference</label>
-                <input type="text" id="paymentReference" placeholder="Transaction code / teller no." />
-              </div>
-              <div class="form-actions full-width">
-                <button class="btn primary" type="submit">Save Payment</button>
-              </div>
+              <div><label>Student</label><select id="paymentStudent" required></select></div>
+              <div><label>Posted Invoice</label><select id="paymentInvoice" required></select></div>
+              <div><label>Receipt Number</label><input type="text" id="receiptNumber" readonly /></div>
+              <div><label>Bank</label><select id="paymentBank" required></select></div>
+              <div><label>Payment Method</label><select id="paymentMethod" required><option>Bank</option><option>Cash</option><option>Mobile Money</option><option>Cheque</option></select></div>
+              <div><label>Amount</label><input type="number" id="paymentAmount" min="0" step="0.01" required /></div>
+              <div><label>Date</label><input type="date" id="paymentDate" required /></div>
+              <div><label>Reference</label><input type="text" id="paymentReference" placeholder="Transaction code / teller no." /></div>
+              <div class="full-width"><label>Narration</label><textarea id="paymentNarration" rows="2" placeholder="Optional posting notes"></textarea></div>
+              <div class="form-actions full-width"><button class="btn primary" type="submit">Save Draft Receipt</button></div>
             </form>
           </article>
-
           <article class="panel">
-            <div class="panel-header inline-between wrap-gap">
-              <div>
-                <h3>Receipts</h3>
-                <p class="muted small">Search and reprint</p>
-              </div>
-              <input type="search" id="paymentSearch" placeholder="Search receipt..." />
+            <div class="panel-header inline-between wrap-gap"><div><h3>Receipt Register</h3><p class="muted small">Post, print and reverse</p></div><input type="search" id="paymentSearch" placeholder="Search receipt..." /></div>
+            <div class="table-wrap"><table><thead><tr><th>Receipt No.</th><th>Student</th><th>Invoice</th><th>Bank</th><th>Amount</th><th>Status</th><th>Action</th></tr></thead><tbody id="paymentsTableBody"></tbody></table></div>
+          </article>
+        </div>
+      </section>
+
+      <section id="refunds" class="section">
+        <div class="panel-grid two uneven">
+          <article class="panel">
+            <div class="panel-header"><div><h3>Create Refund</h3><p class="muted small">For overpayments and approved student refunds</p></div></div>
+            <form id="refundForm" class="form-grid">
+              <div><label>Student</label><select id="refundStudent" required></select></div>
+              <div><label>Refund Number</label><input type="text" id="refundNumber" readonly /></div>
+              <div><label>Bank</label><select id="refundBank" required></select></div>
+              <div><label>Amount</label><input type="number" id="refundAmount" min="0" step="0.01" required /></div>
+              <div><label>Date</label><input type="date" id="refundDate" required /></div>
+              <div><label>Reason</label><input type="text" id="refundReason" placeholder="Overpayment / correction" required /></div>
+              <div class="full-width"><label>Approval / Notes</label><textarea id="refundNotes" rows="3" placeholder="Approval comments"></textarea></div>
+              <div class="form-actions full-width"><button class="btn primary" type="submit">Save Draft Refund</button></div>
+            </form>
+          </article>
+          <article class="panel">
+            <div class="panel-header inline-between wrap-gap"><div><h3>Refund Register</h3><p class="muted small">Approve, pay and reverse</p></div><input type="search" id="refundSearch" placeholder="Search refund..." /></div>
+            <div class="table-wrap"><table><thead><tr><th>Refund No.</th><th>Student</th><th>Bank</th><th>Amount</th><th>Status</th><th>Action</th></tr></thead><tbody id="refundsTableBody"></tbody></table></div>
+          </article>
+        </div>
+      </section>
+
+      <section id="ledger" class="section">
+        <div class="panel-grid two uneven">
+          <article class="panel">
+            <div class="panel-header inline-between wrap-gap"><div><h3>Student Ledger</h3><p class="muted small">Track invoice, receipt, refund and reversal movements</p></div></div>
+            <div class="form-grid statement-box">
+              <div><label>Student</label><select id="ledgerStudent"></select></div>
+              <div><label>As At Date</label><input type="date" id="ledgerDate" /></div>
+              <div class="form-actions full-width"><button class="btn primary" id="generateLedgerBtn" type="button">Generate Ledger</button></div>
             </div>
-            <div class="table-wrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Receipt No.</th>
-                    <th>Student</th>
-                    <th>Invoice</th>
-                    <th>Method</th>
-                    <th>Amount</th>
-                    <th>Date</th>
-                    <th>Action</th>
-                  </tr>
-                </thead>
-                <tbody id="paymentsTableBody"></tbody>
-              </table>
-            </div>
+            <div id="ledgerSummary" class="callout">Choose a student to view the ledger.</div>
+            <div class="table-wrap m-top"><table><thead><tr><th>Date</th><th>Reference</th><th>Type</th><th>Debit</th><th>Credit</th><th>Balance</th><th>Details</th></tr></thead><tbody id="ledgerTableBody"></tbody></table></div>
+          </article>
+          <article class="panel">
+            <div class="panel-header"><div><h3>Audit Trail</h3><p class="muted small">Posting, approvals and reversals</p></div></div>
+            <div id="auditTrailList" class="list-stack compact empty">No audit actions yet.</div>
           </article>
         </div>
       </section>
@@ -417,37 +375,12 @@
       <section id="clearance" class="section">
         <div class="panel-grid two uneven">
           <article class="panel">
-            <div class="panel-header inline-between">
-              <div>
-                <h3>Clearance Overview</h3>
-                <p class="muted small">Balance-based clearance status</p>
-              </div>
-            </div>
+            <div class="panel-header"><div><h3>Clearance Overview</h3><p class="muted small">Students clear only when open balance is zero or less</p></div></div>
             <div id="clearanceSummary" class="callout">No data yet.</div>
-            <div class="table-wrap m-top">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Student</th>
-                    <th>Invoiced</th>
-                    <th>Paid</th>
-                    <th>Balance</th>
-                    <th>Status</th>
-                    <th>Action</th>
-                  </tr>
-                </thead>
-                <tbody id="clearanceTableBody"></tbody>
-              </table>
-            </div>
+            <div class="table-wrap m-top"><table><thead><tr><th>Student</th><th>Invoiced</th><th>Receipts</th><th>Refunds</th><th>Balance</th><th>Status</th><th>Action</th></tr></thead><tbody id="clearanceTableBody"></tbody></table></div>
           </article>
-
           <article class="panel">
-            <div class="panel-header inline-between">
-              <div>
-                <h3>Student Profile</h3>
-                <p class="muted small">Click a student from any table to inspect details</p>
-              </div>
-            </div>
+            <div class="panel-header"><div><h3>Student Profile</h3><p class="muted small">Click a student from any table to inspect details</p></div></div>
             <div id="studentProfilePanel" class="profile-panel empty">Select a student to view billing profile.</div>
           </article>
         </div>
@@ -457,56 +390,28 @@
         <div class="panel-grid two uneven">
           <article class="panel">
             <div class="panel-header inline-between">
-              <div>
-                <h3>Report Summary</h3>
-                <p class="muted small">Fast overview of collections</p>
-              </div>
+              <div><h3>Report Summary</h3><p class="muted small">Collections, refunds and balances</p></div>
               <div class="actions-row">
                 <button class="btn secondary" id="exportStudentsBtn">Export Students CSV</button>
-                <button class="btn secondary" id="exportPaymentsBtn">Export Payments CSV</button>
+                <button class="btn secondary" id="exportPaymentsBtn">Export Receipts CSV</button>
                 <button class="btn secondary" id="exportInvoicesBtn">Export Invoices CSV</button>
+                <button class="btn secondary" id="exportRefundsBtn">Export Refunds CSV</button>
               </div>
             </div>
             <div class="report-grid">
-              <div class="report-card">
-                <span>Today Collections</span>
-                <strong id="dailyCollections">KES 0.00</strong>
-              </div>
-              <div class="report-card">
-                <span>Total Invoices</span>
-                <strong id="reportTotalInvoices">0</strong>
-              </div>
-              <div class="report-card">
-                <span>Outstanding Amount</span>
-                <strong id="reportOutstanding">KES 0.00</strong>
-              </div>
-              <div class="report-card">
-                <span>Cleared Students</span>
-                <strong id="reportCleared">0</strong>
-              </div>
+              <div class="report-card"><span>Today Collections</span><strong id="dailyCollections">KES 0.00</strong></div>
+              <div class="report-card"><span>Posted Invoices</span><strong id="reportTotalInvoices">0</strong></div>
+              <div class="report-card"><span>Outstanding Amount</span><strong id="reportOutstanding">KES 0.00</strong></div>
+              <div class="report-card"><span>Cleared Students</span><strong id="reportCleared">0</strong></div>
             </div>
             <div id="reportHighlights" class="list-stack compact empty m-top">No report highlights yet.</div>
           </article>
-
           <article class="panel">
-            <div class="panel-header inline-between wrap-gap">
-              <div>
-                <h3>Student Statement</h3>
-                <p class="muted small">Generate a printable statement</p>
-              </div>
-            </div>
+            <div class="panel-header"><div><h3>Student Statement</h3><p class="muted small">Generate a printable statement</p></div></div>
             <div class="form-grid statement-box">
-              <div>
-                <label>Student</label>
-                <select id="statementStudent"></select>
-              </div>
-              <div>
-                <label>As At Date</label>
-                <input type="date" id="statementDate" />
-              </div>
-              <div class="form-actions full-width">
-                <button class="btn primary" id="generateStatementBtn" type="button">Generate Statement</button>
-              </div>
+              <div><label>Student</label><select id="statementStudent"></select></div>
+              <div><label>As At Date</label><input type="date" id="statementDate" /></div>
+              <div class="form-actions full-width"><button class="btn primary" id="generateStatementBtn" type="button">Generate Statement</button></div>
             </div>
             <div id="statementPreview" class="statement-preview empty">Choose a student and generate a statement.</div>
           </article>
@@ -516,61 +421,27 @@
       <section id="settings" class="section">
         <div class="panel-grid two uneven">
           <article class="panel">
-            <div class="panel-header inline-between">
-              <div>
-                <h3>Institution Settings</h3>
-                <p class="muted small">Branding and default billing settings</p>
-              </div>
-            </div>
+            <div class="panel-header"><div><h3>Institution Settings</h3><p class="muted small">Branding and default billing settings</p></div></div>
             <form id="settingsForm" class="form-grid">
-              <div>
-                <label>Institution Name</label>
-                <input type="text" id="schoolName" required />
-              </div>
-              <div>
-                <label>Current Term</label>
-                <input type="text" id="currentTerm" required />
-              </div>
-              <div>
-                <label>Phone</label>
-                <input type="text" id="schoolPhone" />
-              </div>
-              <div>
-                <label>Email</label>
-                <input type="email" id="schoolEmail" />
-              </div>
-              <div>
-                <label>Currency</label>
-                <input type="text" id="currency" maxlength="5" />
-              </div>
-              <div>
-                <label>Address</label>
-                <input type="text" id="schoolAddress" />
-              </div>
-              <div class="full-width">
-                <label>Footer Note</label>
-                <textarea id="footerNote" rows="3"></textarea>
-              </div>
-              <div class="form-actions full-width">
-                <button class="btn primary" type="submit">Save Settings</button>
-              </div>
+              <div><label>Institution Name</label><input type="text" id="schoolName" required /></div>
+              <div><label>Current Term</label><input type="text" id="currentTerm" required /></div>
+              <div><label>Phone</label><input type="text" id="schoolPhone" /></div>
+              <div><label>Email</label><input type="email" id="schoolEmail" /></div>
+              <div><label>Currency</label><input type="text" id="currency" maxlength="5" /></div>
+              <div><label>Address</label><input type="text" id="schoolAddress" /></div>
+              <div class="full-width"><label>Footer Note</label><textarea id="footerNote" rows="3"></textarea></div>
+              <div class="form-actions full-width"><button class="btn primary" type="submit">Save Settings</button></div>
             </form>
           </article>
-
           <article class="panel">
-            <div class="panel-header inline-between">
-              <div>
-                <h3>About This Upgrade</h3>
-                <p class="muted small">What was improved</p>
-              </div>
-            </div>
+            <div class="panel-header"><div><h3>Finance Workflow Notes</h3><p class="muted small">How the system behaves</p></div></div>
             <div class="feature-list">
-              <div class="feature-item"><strong>Secure entry</strong><span>Simple demo login screen.</span></div>
-              <div class="feature-item"><strong>Print-ready documents</strong><span>Invoice, receipt, clearance and statement previews.</span></div>
-              <div class="feature-item"><strong>Analytics</strong><span>Dashboard KPIs and collections chart.</span></div>
-              <div class="feature-item"><strong>Backup & restore</strong><span>Export/import JSON backup in browser.</span></div>
-              <div class="feature-item"><strong>Institution branding</strong><span>Customize school name, contact and footer.</span></div>
-              <div class="feature-item"><strong>Persistent storage</strong><span>Data stays in browser with localStorage.</span></div>
+              <div class="feature-item"><strong>Invoice posting</strong><span>Dr Student Debtor, Cr Fee Revenue. Draft invoices do not affect balance until posted.</span></div>
+              <div class="feature-item"><strong>Receipt posting</strong><span>Dr Bank, Cr Student. Only posted receipts reduce the invoiced balance.</span></div>
+              <div class="feature-item"><strong>Refund payment</strong><span>Dr Student / Refund Control, Cr Bank after approval and payment.</span></div>
+              <div class="feature-item"><strong>Reversal control</strong><span>Posted items are not deleted. They are reversed with a reason and audit trail.</span></div>
+              <div class="feature-item"><strong>Bank balances</strong><span>Every posted receipt increases selected bank. Paid refunds reduce the selected bank.</span></div>
+              <div class="feature-item"><strong>Ledger visibility</strong><span>Student ledger shows invoices, receipts, refunds and reversals in one place.</span></div>
             </div>
           </article>
         </div>
@@ -579,23 +450,15 @@
   </div>
 
   <div id="toast" class="toast"></div>
-
   <div id="modal" class="modal hidden">
     <div class="modal-card">
       <div class="modal-header">
-        <div>
-          <h3 id="modalTitle">Preview</h3>
-          <p class="muted small">Print-ready output</p>
-        </div>
-        <div class="actions-row">
-          <button class="btn secondary" id="printModalBtn">Print</button>
-          <button class="btn ghost" id="closeModalBtn">Close</button>
-        </div>
+        <div><h3 id="modalTitle">Preview</h3><p class="muted small">Print-ready output</p></div>
+        <div class="actions-row"><button class="btn secondary" id="printModalBtn">Print</button><button class="btn ghost" id="closeModalBtn">Close</button></div>
       </div>
       <div id="modalBody" class="modal-body"></div>
     </div>
   </div>
-
   <script src="app.js"></script>
 </body>
 </html>
