@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Rainbow Primary ERP v9 World Class Edition</title>
+  <title>Rainbow Primary ERP Kenya v10 Kenya Top Tier Edition</title>
   <meta name="theme-color" content="#ff7a18" />
   <link rel="stylesheet" href="styles.css" />
 </head>
@@ -13,8 +13,8 @@
       <div class="auth-ribbons"><span>🌈 Child-Friendly</span><span>📱 Mobile First</span><span>🏆 World Class</span></div><div class="brand-row">
         <div class="logo">🌟</div>
         <div>
-          <h1>Rainbow Primary ERP v9</h1>
-          <p>A bright, world-class primary school system with playful colors, easy mobile navigation, cleaner screens, and quick access for admin, teacher, bursar, and finance users.</p>
+          <h1>Rainbow Primary ERP Kenya v10</h1>
+          <p>A top-tier Kenya-friendly primary school system with colorful, mobile-first workflows for admissions, attendance, finance, exams, reports, and approvals.</p>
         </div>
       </div>
       <form id="loginForm" class="form-grid one-col">
@@ -32,8 +32,8 @@
         <div class="brand-panel"><button class="menu-toggle" id="menuToggle" type="button" aria-label="Toggle menu">☰</button>
           <div class="logo">🌈</div>
           <div>
-            <h2 id="brandSchoolName">Rainbow Primary ERP</h2>
-            <p id="brandTerm">Fun • Colorful • Mobile Friendly</p>
+            <h2 id="brandSchoolName">Rainbow Primary ERP Kenya</h2>
+            <p id="brandTerm">CBC Ready • Colorful • Mobile Friendly</p>
           </div>
         </div>
         <nav class="nav">
@@ -106,8 +106,14 @@
             </div>
           </article>
           <article class="panel">
-            <div class="panel-header"><div><h3>Recent activity</h3><p class="muted">Latest actions</p></div></div>
-            <div id="activityList" class="list-stack empty">No activity yet.</div>
+            <div class="panel-header"><div><h3>Workflow centre</h3><p class="muted">Fast automation and approval shortcuts</p></div></div>
+            <div class="workflow-grid">
+              <button class="quick-action bright" id="autoInvoiceBtn" data-jump="finance">⚡ Auto Generate Class Invoices</button>
+              <button class="quick-action bright" id="todayReceiptsBtn" data-jump="reports">🧾 View Today Receipts</button>
+              <button class="quick-action bright" data-jump="reports">📊 Open Reports Hub</button>
+              <button class="quick-action bright" data-jump="settings">🏫 Update School Term</button>
+            </div>
+            <div id="activityList" class="list-stack empty mt">No activity yet.</div>
           </article>
         </div>
       </section>
@@ -342,13 +348,60 @@
           <article class="stat-card"><span>Attendance Today</span><h3 id="reportAttendance">0</h3></article>
           <article class="stat-card"><span>Messages Logged</span><h3 id="reportMessages">0</h3></article>
         </div>
-        <div class="grid-2 mt">
+        <div class="grid-2 uneven mt">
           <article class="panel">
-            <div class="panel-header"><div><h3>Balances</h3></div></div>
-            <div class="table-wrap"><table><thead><tr><th>Adm</th><th>Name</th><th>Class</th><th>Balance</th><th>Credit</th></tr></thead><tbody id="reportBalancesTableBody"></tbody></table></div>
+            <div class="panel-header"><div><h3>Reports Hub</h3><p class="muted">Pull reports by class, term, status, format, and date</p></div></div>
+            <form id="reportForm" class="form-grid">
+              <div><label>Report Type</label><select id="reportType">
+                <option value="balances">Fee Balance Report</option>
+                <option value="collections">Collections Report</option>
+                <option value="attendance">Attendance Summary</option>
+                <option value="performance">Class Performance</option>
+                <option value="ledger">Student Ledger</option>
+                <option value="reportcards">Report Card Summary</option>
+                <option value="staff">Staff Register</option>
+                <option value="audit">Audit Trail</option>
+              </select></div>
+              <div><label>Class</label><select id="reportClassId"></select></div>
+              <div><label>Student</label><select id="reportStudentId"></select></div>
+              <div><label>Term</label><input id="reportTerm" placeholder="Term 1"></div>
+              <div><label>From Date</label><input id="reportFromDate" type="date"></div>
+              <div><label>To Date</label><input id="reportToDate" type="date"></div>
+              <div class="full-width form-actions">
+                <button class="btn primary" type="button" id="runReportBtn">Run Report</button>
+                <button class="btn ghost" type="button" id="printReportBtn">Print / PDF</button>
+                <button class="btn ghost" type="button" id="exportCsvBtn">Export CSV</button>
+                <button class="btn ghost" type="button" id="exportExcelBtn">Export Excel</button>
+                <button class="btn ghost" type="button" id="exportJsonBtn">Export JSON</button>
+              </div>
+            </form>
+            <div class="report-preview mt">
+              <div class="report-banner">
+                <div>
+                  <span class="hero-kicker">📘 Smart reporting</span>
+                  <h3 id="reportPreviewTitle">Fee Balance Report</h3>
+                  <p id="reportPreviewMeta" class="muted">Run a report to preview results here.</p>
+                </div>
+                <div class="hero-icons" aria-hidden="true"><span>📄</span><span>📈</span><span>📦</span></div>
+              </div>
+              <div class="table-wrap">
+                <table id="reportPreviewTable">
+                  <thead id="reportPreviewHead"></thead>
+                  <tbody id="reportPreviewBody"><tr><td class="muted">No report generated yet.</td></tr></tbody>
+                </table>
+              </div>
+            </div>
           </article>
           <article class="panel">
-            <div class="panel-header"><div><h3>Insights</h3></div></div>
+            <div class="panel-header"><div><h3>Insights & Snapshots</h3><p class="muted">Live operational picture</p></div></div>
+            <div class="mini-stat-grid">
+              <div class="mini-stat"><span>Students with balances</span><strong id="insightBalances">0</strong></div>
+              <div class="mini-stat"><span>Students with credit</span><strong id="insightCredits">0</strong></div>
+              <div class="mini-stat"><span>Posted invoices</span><strong id="insightInvoices">0</strong></div>
+              <div class="mini-stat"><span>Posted receipts</span><strong id="insightReceipts">0</strong></div>
+            </div>
+            <div class="table-wrap mt"><table><thead><tr><th>Adm</th><th>Name</th><th>Class</th><th>Balance</th><th>Credit</th></tr></thead><tbody id="reportBalancesTableBody"></tbody></table></div>
+            <div class="panel-header mt"><div><h3>Insights</h3></div></div>
             <div id="reportInsightList" class="list-stack empty">No insights yet.</div>
           </article>
         </div>
