@@ -3,42 +3,39 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>EduBill Pro Finance | Student Billing System</title>
+  <title>EduBill School ERP v6</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <div id="authScreen" class="auth-screen">
     <div class="auth-card">
       <div class="auth-brand">
-        <div class="auth-logo">E</div>
+        <div class="auth-logo">E6</div>
         <div>
-          <h1>EduBill Pro Finance</h1>
-          <p>Student billing, posting, receipting, refunds, reversals and audit trail.</p>
+          <h1>EduBill School ERP v6</h1>
+          <p>Students, finance, attendance, exams, staff, communication, reports, users and approvals.</p>
         </div>
       </div>
-
-      <div class="auth-highlight">
-        <div>
-          <strong>Version 4 Finance Workflow</strong>
-          <span>Banks, posted invoices, bank-based receipts, refunds, reversals, ledger movement and stronger controls.</span>
-        </div>
+      <div class="auth-feature-box">
+        <strong>Modules included</strong>
+        <span>Student records, attendance, fee invoicing, receipting, refunds, exams & grading, staff records, announcements, role-based access, audit trail and reports.</span>
       </div>
-
       <form id="loginForm" class="auth-form">
         <div>
           <label>Username</label>
-          <input type="text" id="loginUsername" placeholder="admin" required />
+          <input id="loginUsername" required placeholder="admin" />
         </div>
         <div>
           <label>Password</label>
-          <input type="password" id="loginPassword" placeholder="admin123" required />
+          <input id="loginPassword" type="password" required placeholder="admin123" />
         </div>
-        <button class="btn primary full-width" type="submit">Sign In</button>
+        <button class="btn primary full" type="submit">Sign In</button>
       </form>
-
-      <div class="demo-credentials">
-        <span>Demo login</span>
-        <strong>admin / admin123</strong>
+      <div class="credential-grid">
+        <div><strong>Admin</strong><span>admin / admin123</span></div>
+        <div><strong>CEO</strong><span>ceo / ceo123</span></div>
+        <div><strong>Finance</strong><span>finance / finance123</span></div>
+        <div><strong>Teacher</strong><span>teacher / teacher123</span></div>
       </div>
     </div>
   </div>
@@ -47,36 +44,35 @@
     <aside class="sidebar">
       <div>
         <div class="brand">
-          <div class="brand-mark">E</div>
+          <div class="brand-mark">E6</div>
           <div>
-            <h1 id="brandSchoolName">EduBill Pro Finance</h1>
-            <p id="brandTerm">Current Term</p>
+            <h1 id="brandSchoolName">EduBill School ERP v6</h1>
+            <p id="brandSchoolTerm">Term 1 2026</p>
           </div>
         </div>
-
         <nav class="nav">
           <button class="nav-link active" data-section="dashboard">Dashboard</button>
           <button class="nav-link" data-section="students">Students</button>
-          <button class="nav-link" data-section="banks">Banks</button>
-          <button class="nav-link" data-section="invoices">Invoices</button>
-          <button class="nav-link" data-section="payments">Receipts</button>
-          <button class="nav-link" data-section="refunds">Refunds</button>
-          <button class="nav-link" data-section="ledger">Ledger</button>
-          <button class="nav-link" data-section="clearance">Clearance</button>
+          <button class="nav-link" data-section="attendance">Attendance</button>
+          <button class="nav-link" data-section="finance">Finance</button>
+          <button class="nav-link" data-section="exams">Exams & Results</button>
+          <button class="nav-link" data-section="staff">Staff</button>
+          <button class="nav-link" data-section="communication">Communication</button>
           <button class="nav-link" data-section="reports">Reports</button>
           <button class="nav-link" data-section="users">Users & Access</button>
           <button class="nav-link" data-section="settings">Settings</button>
         </nav>
       </div>
-
       <div class="sidebar-bottom">
         <div class="mini-card">
           <span>Signed in as</span>
           <strong id="signedInUser">Administrator</strong>
         </div>
         <div class="sidebar-actions">
-          <button class="btn secondary full-width" id="loadSampleBtn">Load Sample Data</button>
-          <button class="btn ghost full-width" id="logoutBtn">Logout</button>
+          <button id="loadSampleBtn" class="btn secondary full">Load Sample Data</button>
+          <button id="exportBackupBtn" class="btn ghost full">Export Backup</button>
+          <label class="btn ghost full upload-label">Import Backup<input hidden type="file" id="importBackupInput" accept="application/json" /></label>
+          <button id="logoutBtn" class="btn danger full">Logout</button>
         </div>
       </div>
     </aside>
@@ -85,105 +81,50 @@
       <header class="topbar">
         <div>
           <h2 id="pageTitle">Dashboard</h2>
-          <p class="muted" id="pageSubtitle">A premium web-based finance demo with posting, banks, refunds and reversals.</p>
+          <p id="pageSubtitle" class="muted">A clean school ERP demo with finance workflow and academic records.</p>
         </div>
         <div class="topbar-actions">
-          <div class="search-chip">
-            <span>Live data</span>
-            <strong id="lastSavedLabel">Not saved yet</strong>
-          </div>
-          <button class="btn secondary" id="backupBtn">Export Backup</button>
-          <label class="btn ghost upload-btn">
-            Import Backup
-            <input type="file" id="importBackupInput" accept="application/json" hidden />
-          </label>
-          <button class="btn danger" id="resetBtn">Reset</button>
+          <span class="save-chip">Saved: <strong id="lastSavedAt">Not yet</strong></span>
+          <button class="btn secondary" id="printPageBtn">Print</button>
         </div>
       </header>
 
       <section id="dashboard" class="section active">
-        <div class="stats-grid six">
-          <article class="stat-card accent-blue">
-            <span>Total Students</span>
-            <h3 id="statStudents">0</h3>
-            <small>Registered records</small>
-          </article>
-          <article class="stat-card accent-cyan">
-            <span>Posted Invoices</span>
-            <h3 id="statInvoiced">KES 0.00</h3>
-            <small>Official billed amount</small>
-          </article>
-          <article class="stat-card accent-green">
-            <span>Collected</span>
-            <h3 id="statCollected">KES 0.00</h3>
-            <small>Posted receipts</small>
-          </article>
-          <article class="stat-card accent-amber">
-            <span>Outstanding</span>
-            <h3 id="statOutstanding">KES 0.00</h3>
-            <small>Open balances</small>
-          </article>
-          <article class="stat-card accent-green">
-            <span>Bank Balance</span>
-            <h3 id="statBankBalance">KES 0.00</h3>
-            <small>Total posted cash at bank</small>
-          </article>
-          <article class="stat-card accent-red">
-            <span>Refunds Paid</span>
-            <h3 id="statRefunds">KES 0.00</h3>
-            <small>Posted refunds</small>
-          </article>
+        <div class="stats-grid">
+          <article class="stat-card"><span>Students</span><h3 id="statStudents">0</h3><small>Active student records</small></article>
+          <article class="stat-card"><span>Staff</span><h3 id="statStaff">0</h3><small>Teachers and support staff</small></article>
+          <article class="stat-card"><span>Attendance Today</span><h3 id="statAttendance">0%</h3><small>Student attendance rate</small></article>
+          <article class="stat-card"><span>Posted Invoices</span><h3 id="statInvoiced">KES 0.00</h3><small>Official billed value</small></article>
+          <article class="stat-card"><span>Receipts</span><h3 id="statCollected">KES 0.00</h3><small>Collected fees</small></article>
+          <article class="stat-card"><span>Outstanding</span><h3 id="statOutstanding">KES 0.00</h3><small>Unpaid balances</small></article>
         </div>
 
-        <div class="dashboard-grid">
+        <div class="panel-grid two uneven">
           <article class="panel hero-panel">
-            <div class="panel-header inline-between">
-              <div>
-                <h3>Collections Trend</h3>
-                <p class="muted small">Last 6 months posted receipts</p>
-              </div>
-              <span class="badge info" id="collectionPeakLabel">No data</span>
-            </div>
-            <canvas id="collectionsChart" width="900" height="320"></canvas>
+            <div class="panel-header inline-between"><div><h3>System Snapshot</h3><p class="muted small">Live summary of school operations</p></div></div>
+            <div id="dashboardHighlights" class="highlight-grid"></div>
           </article>
-
           <article class="panel">
-            <div class="panel-header inline-between">
-              <div>
-                <h3>Quick Actions</h3>
-                <p class="muted small">Fast navigation</p>
-              </div>
-            </div>
-            <div class="quick-actions-grid">
-              <button class="quick-action" data-jump="students">Add Student</button>
-              <button class="quick-action" data-jump="banks">Add Bank</button>
-              <button class="quick-action" data-jump="invoices">Create Invoice</button>
-              <button class="quick-action" data-jump="payments">Post Receipt</button>
-              <button class="quick-action" data-jump="refunds">Create Refund</button>
-              <button class="quick-action" data-jump="ledger">Open Ledger</button>
-            </div>
+            <div class="panel-header"><div><h3>Recent Activity</h3><p class="muted small">Latest actions in the system</p></div></div>
+            <div id="recentActivity" class="list-stack empty">No activity yet.</div>
           </article>
         </div>
 
         <div class="panel-grid two">
           <article class="panel">
-            <div class="panel-header inline-between">
-              <div>
-                <h3>Top Outstanding Students</h3>
-                <p class="muted small">Largest balances first</p>
-              </div>
+            <div class="panel-header"><div><h3>Quick Actions</h3><p class="muted small">Fast common actions</p></div></div>
+            <div class="quick-grid">
+              <button class="quick-action" data-jump="students">Register Student</button>
+              <button class="quick-action" data-jump="attendance">Mark Attendance</button>
+              <button class="quick-action" data-jump="finance">Create Invoice</button>
+              <button class="quick-action" data-jump="exams">Enter Marks</button>
+              <button class="quick-action" data-jump="staff">Add Staff</button>
+              <button class="quick-action" data-jump="communication">Announcement</button>
             </div>
-            <div id="outstandingList" class="list-stack empty">No balances yet.</div>
           </article>
-
           <article class="panel">
-            <div class="panel-header inline-between">
-              <div>
-                <h3>Recent Activity</h3>
-                <p class="muted small">Latest workflow actions</p>
-              </div>
-            </div>
-            <div id="activityList" class="list-stack empty">No activity yet.</div>
+            <div class="panel-header"><div><h3>Outstanding Students</h3><p class="muted small">Top balances first</p></div></div>
+            <div id="outstandingStudents" class="list-stack empty">No balances yet.</div>
           </article>
         </div>
       </section>
@@ -191,71 +132,29 @@
       <section id="students" class="section">
         <div class="panel-grid two uneven">
           <article class="panel">
-            <div class="panel-header">
-              <div>
-                <h3>Add / Update Student</h3>
-                <p class="muted small">Maintain student profiles</p>
-              </div>
-            </div>
+            <div class="panel-header"><div><h3>Student Registration</h3><p class="muted small">Admission, profile update and promotion</p></div></div>
             <form id="studentForm" class="form-grid">
               <input type="hidden" id="studentId" />
-              <div>
-                <label>Admission Number</label>
-                <input type="text" id="admissionNo" placeholder="e.g. EDU/2026/001" required />
-              </div>
-              <div>
-                <label>Full Name</label>
-                <input type="text" id="studentName" placeholder="Full name" required />
-              </div>
-              <div>
-                <label>Programme</label>
-                <input type="text" id="programme" placeholder="Programme" required />
-              </div>
-              <div>
-                <label>Year</label>
-                <select id="yearOfStudy" required>
-                  <option value="">Select year</option>
-                  <option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option>
-                </select>
-              </div>
-              <div>
-                <label>Phone</label>
-                <input type="text" id="phone" placeholder="07xxxxxxxx" />
-              </div>
-              <div>
-                <label>Email</label>
-                <input type="email" id="studentEmail" placeholder="student@email.com" />
-              </div>
-              <div>
-                <label>Status</label>
-                <select id="studentStatus"><option>Active</option><option>Completed</option><option>Deferred</option></select>
-              </div>
-              <div>
-                <label>Guardian</label>
-                <input type="text" id="guardianName" placeholder="Parent / guardian" />
-              </div>
-              <div class="full-width">
-                <label>Notes</label>
-                <textarea id="studentNotes" rows="3" placeholder="Extra details"></textarea>
-              </div>
-              <div class="form-actions full-width">
+              <div><label>Admission No</label><input id="admissionNo" required placeholder="ADM/2026/001" /></div>
+              <div><label>Full Name</label><input id="studentName" required placeholder="Student full name" /></div>
+              <div><label>Class</label><input id="studentClass" required placeholder="Grade 7" /></div>
+              <div><label>Parent Contact</label><input id="parentContact" placeholder="+2547..." /></div>
+              <div><label>Gender</label><select id="studentGender"><option>Male</option><option>Female</option></select></div>
+              <div><label>Status</label><select id="studentStatus"><option>Active</option><option>Transferred</option><option>Graduated</option></select></div>
+              <div><label>Parent Name</label><input id="parentName" placeholder="Parent or guardian" /></div>
+              <div><label>Notes</label><input id="studentNotes" placeholder="Optional notes" /></div>
+              <div class="form-actions span-2">
                 <button class="btn primary" type="submit">Save Student</button>
-                <button class="btn secondary" type="button" id="clearStudentBtn">Clear</button>
+                <button class="btn ghost" type="button" id="promoteClassBtn">Promote Selected Class</button>
+                <button class="btn ghost" type="button" id="clearStudentBtn">Clear Form</button>
               </div>
             </form>
           </article>
-
           <article class="panel">
-            <div class="panel-header inline-between wrap-gap">
-              <div>
-                <h3>Student Register</h3>
-                <p class="muted small">Search and manage records</p>
-              </div>
-              <input type="search" id="studentSearch" placeholder="Search student..." />
-            </div>
+            <div class="panel-header inline-between"><div><h3>Student Records</h3><p class="muted small">Search and maintain profiles</p></div><input id="studentSearch" class="table-search" placeholder="Search students" /></div>
             <div class="table-wrap">
               <table>
-                <thead><tr><th>Adm No.</th><th>Name</th><th>Programme</th><th>Year</th><th>Balance</th><th>Action</th></tr></thead>
+                <thead><tr><th>Admission</th><th>Name</th><th>Class</th><th>Parent Contact</th><th>Status</th><th>Action</th></tr></thead>
                 <tbody id="studentsTableBody"></tbody>
               </table>
             </div>
@@ -263,214 +162,258 @@
         </div>
       </section>
 
-      <section id="banks" class="section">
+      <section id="attendance" class="section">
         <div class="panel-grid two uneven">
           <article class="panel">
-            <div class="panel-header"><div><h3>Bank Setup</h3><p class="muted small">Create and maintain collection banks</p></div></div>
-            <form id="bankForm" class="form-grid">
-              <input type="hidden" id="bankId" />
-              <div><label>Bank Name</label><input type="text" id="bankName" required /></div>
-              <div><label>Account Number</label><input type="text" id="bankAccount" required /></div>
-              <div><label>Branch</label><input type="text" id="bankBranch" required /></div>
-              <div><label>Account Type</label><select id="bankType"><option>Collection</option><option>Current</option><option>Savings</option></select></div>
-              <div><label>Status</label><select id="bankStatus"><option>Active</option><option>Inactive</option></select></div>
-              <div><label>Opening Balance</label><input type="number" id="bankOpeningBalance" min="0" step="0.01" value="0" /></div>
-              <div class="full-width"><label>Notes</label><textarea id="bankNotes" rows="3"></textarea></div>
-              <div class="form-actions full-width"><button class="btn primary" type="submit">Save Bank</button><button class="btn secondary" type="button" id="clearBankBtn">Clear</button></div>
+            <div class="panel-header"><div><h3>Daily Attendance</h3><p class="muted small">Mark present, absent or late per student</p></div></div>
+            <form id="attendanceForm" class="form-grid">
+              <div><label>Date</label><input id="attendanceDate" type="date" required /></div>
+              <div><label>Class</label><input id="attendanceClass" placeholder="Grade 7" required /></div>
+              <div class="span-2"><label>Student</label><select id="attendanceStudent" required></select></div>
+              <div><label>Status</label><select id="attendanceStatus"><option>Present</option><option>Absent</option><option>Late</option></select></div>
+              <div><label>Remarks</label><input id="attendanceRemarks" placeholder="Optional remark" /></div>
+              <div class="form-actions span-2"><button class="btn primary" type="submit">Save Attendance</button></div>
             </form>
           </article>
           <article class="panel">
-            <div class="panel-header inline-between wrap-gap"><div><h3>Bank Register</h3><p class="muted small">Receipts post into selected bank</p></div><input type="search" id="bankSearch" placeholder="Search bank..." /></div>
-            <div class="table-wrap"><table><thead><tr><th>Bank</th><th>Account</th><th>Branch</th><th>Status</th><th>Balance</th><th>Action</th></tr></thead><tbody id="banksTableBody"></tbody></table></div>
-          </article>
-        </div>
-      </section>
-
-      <section id="invoices" class="section">
-        <div class="panel-grid two uneven">
-          <article class="panel">
-            <div class="panel-header"><div><h3>Create Invoice</h3><p class="muted small">Draft first, then post to make it official</p></div></div>
-            <form id="invoiceForm" class="form-grid">
-              <div><label>Student</label><select id="invoiceStudent" required></select></div>
-              <div><label>Invoice Number</label><input type="text" id="invoiceNumber" readonly /></div>
-              <div><label>Description</label><input type="text" id="invoiceDescription" placeholder="Semester fees" required /></div>
-              <div><label>Term / Semester</label><input type="text" id="invoiceTerm" placeholder="Term 1" required /></div>
-              <div><label>Amount</label><input type="number" id="invoiceAmount" min="0" step="0.01" required /></div>
-              <div><label>Due Date</label><input type="date" id="invoiceDueDate" required /></div>
-              <div class="full-width"><label>Invoice Notes</label><textarea id="invoiceNotes" rows="3" placeholder="Optional notes"></textarea></div>
-              <div class="form-actions full-width"><button class="btn primary" type="submit">Save Draft Invoice</button></div>
-            </form>
-          </article>
-          <article class="panel">
-            <div class="panel-header inline-between wrap-gap"><div><h3>Invoice Register</h3><p class="muted small">Post, preview and reverse</p></div><input type="search" id="invoiceSearch" placeholder="Search invoice..." /></div>
-            <div class="table-wrap"><table><thead><tr><th>Invoice No.</th><th>Student</th><th>Amount</th><th>Paid</th><th>Balance</th><th>Status</th><th>Action</th></tr></thead><tbody id="invoicesTableBody"></tbody></table></div>
-          </article>
-        </div>
-      </section>
-
-      <section id="payments" class="section">
-        <div class="panel-grid two uneven">
-          <article class="panel">
-            <div class="panel-header"><div><h3>Record Receipt</h3><p class="muted small">Select bank, then post receipt to reduce student balance</p></div></div>
-            <form id="paymentForm" class="form-grid">
-              <div><label>Student</label><select id="paymentStudent" required></select></div>
-              <div><label>Posted Invoice</label><select id="paymentInvoice" required></select></div>
-              <div><label>Receipt Number</label><input type="text" id="receiptNumber" readonly /></div>
-              <div><label>Bank</label><select id="paymentBank" required></select></div>
-              <div><label>Payment Method</label><select id="paymentMethod" required><option>Bank</option><option>Cash</option><option>Mobile Money</option><option>Cheque</option></select></div>
-              <div><label>Amount</label><input type="number" id="paymentAmount" min="0" step="0.01" required /></div>
-              <div><label>Date</label><input type="date" id="paymentDate" required /></div>
-              <div><label>Reference</label><input type="text" id="paymentReference" placeholder="Transaction code / teller no." /></div>
-              <div class="full-width"><label>Narration</label><textarea id="paymentNarration" rows="2" placeholder="Optional posting notes"></textarea></div>
-              <div class="form-actions full-width"><button class="btn primary" type="submit">Save Draft Receipt</button></div>
-            </form>
-          </article>
-          <article class="panel">
-            <div class="panel-header inline-between wrap-gap"><div><h3>Receipt Register</h3><p class="muted small">Post, print and reverse</p></div><input type="search" id="paymentSearch" placeholder="Search receipt..." /></div>
-            <div class="table-wrap"><table><thead><tr><th>Receipt No.</th><th>Student</th><th>Invoice</th><th>Bank</th><th>Amount</th><th>Status</th><th>Action</th></tr></thead><tbody id="paymentsTableBody"></tbody></table></div>
-          </article>
-        </div>
-      </section>
-
-      <section id="refunds" class="section">
-        <div class="panel-grid two uneven">
-          <article class="panel">
-            <div class="panel-header"><div><h3>Create Refund</h3><p class="muted small">For overpayments and approved student refunds</p></div></div>
-            <form id="refundForm" class="form-grid">
-              <div><label>Student</label><select id="refundStudent" required></select></div>
-              <div><label>Refund Number</label><input type="text" id="refundNumber" readonly /></div>
-              <div><label>Bank</label><select id="refundBank" required></select></div>
-              <div><label>Amount</label><input type="number" id="refundAmount" min="0" step="0.01" required /></div>
-              <div><label>Date</label><input type="date" id="refundDate" required /></div>
-              <div><label>Reason</label><input type="text" id="refundReason" placeholder="Overpayment / correction" required /></div>
-              <div class="full-width"><label>Approval / Notes</label><textarea id="refundNotes" rows="3" placeholder="Approval comments"></textarea></div>
-              <div class="form-actions full-width"><button class="btn primary" type="submit">Save Draft Refund</button></div>
-            </form>
-          </article>
-          <article class="panel">
-            <div class="panel-header inline-between wrap-gap"><div><h3>Refund Register</h3><p class="muted small">Approve, pay and reverse</p></div><input type="search" id="refundSearch" placeholder="Search refund..." /></div>
-            <div class="table-wrap"><table><thead><tr><th>Refund No.</th><th>Student</th><th>Bank</th><th>Amount</th><th>Status</th><th>Action</th></tr></thead><tbody id="refundsTableBody"></tbody></table></div>
-          </article>
-        </div>
-      </section>
-
-      <section id="ledger" class="section">
-        <div class="panel-grid two uneven">
-          <article class="panel">
-            <div class="panel-header inline-between wrap-gap"><div><h3>Student Ledger</h3><p class="muted small">Track invoice, receipt, refund and reversal movements</p></div></div>
-            <div class="form-grid statement-box">
-              <div><label>Student</label><select id="ledgerStudent"></select></div>
-              <div><label>As At Date</label><input type="date" id="ledgerDate" /></div>
-              <div class="form-actions full-width"><button class="btn primary" id="generateLedgerBtn" type="button">Generate Ledger</button></div>
+            <div class="panel-header inline-between"><div><h3>Attendance Register</h3><p class="muted small">Daily and monthly summary view</p></div><input id="attendanceSearch" class="table-search" placeholder="Search attendance" /></div>
+            <div class="summary-badges" id="attendanceSummary"></div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Date</th><th>Student</th><th>Class</th><th>Status</th><th>Remarks</th></tr></thead>
+                <tbody id="attendanceTableBody"></tbody>
+              </table>
             </div>
-            <div id="ledgerSummary" class="callout">Choose a student to view the ledger.</div>
-            <div class="table-wrap m-top"><table><thead><tr><th>Date</th><th>Reference</th><th>Type</th><th>Debit</th><th>Credit</th><th>Balance</th><th>Details</th></tr></thead><tbody id="ledgerTableBody"></tbody></table></div>
-          </article>
-          <article class="panel">
-            <div class="panel-header"><div><h3>Audit Trail</h3><p class="muted small">Posting, approvals and reversals</p></div></div>
-            <div id="auditTrailList" class="list-stack compact empty">No audit actions yet.</div>
           </article>
         </div>
       </section>
 
-      <section id="clearance" class="section">
-        <div class="panel-grid two uneven">
+      <section id="finance" class="section">
+        <div class="panel-grid three">
           <article class="panel">
-            <div class="panel-header"><div><h3>Clearance Overview</h3><p class="muted small">Students clear only when open balance is zero or less</p></div></div>
-            <div id="clearanceSummary" class="callout">No data yet.</div>
-            <div class="table-wrap m-top"><table><thead><tr><th>Student</th><th>Invoiced</th><th>Receipts</th><th>Refunds</th><th>Balance</th><th>Status</th><th>Action</th></tr></thead><tbody id="clearanceTableBody"></tbody></table></div>
+            <div class="panel-header"><div><h3>Banks</h3><p class="muted small">Create bank accounts for receipting</p></div></div>
+            <form id="bankForm" class="form-grid compact">
+              <input type="hidden" id="bankId" />
+              <div><label>Bank Name</label><input id="bankName" required /></div>
+              <div><label>Account No</label><input id="bankAccount" required /></div>
+              <div><label>Opening Balance</label><input id="bankOpeningBalance" type="number" min="0" step="0.01" value="0" /></div>
+              <div class="form-actions span-2"><button class="btn primary" type="submit">Save Bank</button></div>
+            </form>
           </article>
           <article class="panel">
-            <div class="panel-header"><div><h3>Student Profile</h3><p class="muted small">Click a student from any table to inspect details</p></div></div>
-            <div id="studentProfilePanel" class="profile-panel empty">Select a student to view billing profile.</div>
+            <div class="panel-header"><div><h3>Invoice</h3><p class="muted small">Draft then post to student debtor</p></div></div>
+            <form id="invoiceForm" class="form-grid compact">
+              <div><label>Student</label><select id="invoiceStudent" required></select></div>
+              <div><label>Invoice No</label><input id="invoiceNumber" required /></div>
+              <div><label>Description</label><input id="invoiceDescription" placeholder="Tuition fees" required /></div>
+              <div><label>Amount</label><input id="invoiceAmount" type="number" min="0" step="0.01" required /></div>
+              <div><label>Due Date</label><input id="invoiceDueDate" type="date" required /></div>
+              <div class="form-actions span-2"><button class="btn primary" type="submit">Save Invoice</button></div>
+            </form>
+          </article>
+          <article class="panel">
+            <div class="panel-header"><div><h3>Receipt / Refund</h3><p class="muted small">Bank-based receipting and refunds</p></div></div>
+            <form id="paymentForm" class="form-grid compact">
+              <div><label>Student</label><select id="paymentStudent" required></select></div>
+              <div><label>Bank</label><select id="paymentBank" required></select></div>
+              <div><label>Receipt No</label><input id="receiptNumber" required /></div>
+              <div><label>Amount</label><input id="paymentAmount" type="number" min="0" step="0.01" required /></div>
+              <div><label>Date</label><input id="paymentDate" type="date" required /></div>
+              <div><label>Reference</label><input id="paymentReference" placeholder="MPESA/Bank ref" /></div>
+              <div class="form-actions span-2"><button class="btn primary" type="submit">Save Receipt</button></div>
+            </form>
+            <hr class="divider" />
+            <form id="refundForm" class="form-grid compact">
+              <div><label>Student</label><select id="refundStudent" required></select></div>
+              <div><label>Bank</label><select id="refundBank" required></select></div>
+              <div><label>Refund No</label><input id="refundNumber" required /></div>
+              <div><label>Amount</label><input id="refundAmount" type="number" min="0" step="0.01" required /></div>
+              <div><label>Date</label><input id="refundDate" type="date" required /></div>
+              <div><label>Reason</label><input id="refundReason" placeholder="Overpayment" required /></div>
+              <div class="form-actions span-2"><button class="btn secondary" type="submit">Save Refund</button></div>
+            </form>
+          </article>
+        </div>
+
+        <div class="panel-grid two">
+          <article class="panel">
+            <div class="panel-header inline-between"><div><h3>Finance Transactions</h3><p class="muted small">Post and reverse finance items</p></div><input id="financeSearch" class="table-search" placeholder="Search finance" /></div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Type</th><th>Ref</th><th>Student</th><th>Amount</th><th>Status</th><th>Action</th></tr></thead>
+                <tbody id="financeTableBody"></tbody>
+              </table>
+            </div>
+          </article>
+          <article class="panel">
+            <div class="panel-header"><div><h3>Student Ledger & Clearance</h3><p class="muted small">Auto balance from invoices, receipts and refunds</p></div></div>
+            <form id="ledgerForm" class="form-grid compact single-row">
+              <div><label>Student</label><select id="ledgerStudent"></select></div>
+              <div><label>As At</label><input id="ledgerDate" type="date" /></div>
+              <div class="align-end"><button class="btn primary" type="submit">Generate</button></div>
+            </form>
+            <div id="ledgerSummary" class="summary-badges"></div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Date</th><th>Type</th><th>Ref</th><th>Debit</th><th>Credit</th><th>Balance</th></tr></thead>
+                <tbody id="ledgerTableBody"></tbody>
+              </table>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section id="exams" class="section">
+        <div class="panel-grid two uneven">
+          <article class="panel">
+            <div class="panel-header"><div><h3>Marks Entry</h3><p class="muted small">CATs and exam marks with auto grading</p></div></div>
+            <form id="examForm" class="form-grid">
+              <div><label>Student</label><select id="examStudent" required></select></div>
+              <div><label>Class</label><input id="examClass" required placeholder="Grade 7" /></div>
+              <div><label>Term</label><input id="examTerm" required placeholder="Term 1 2026" /></div>
+              <div><label>Subject</label><input id="examSubject" required placeholder="Mathematics" /></div>
+              <div><label>CAT Mark</label><input id="catMark" type="number" min="0" max="40" step="0.01" required /></div>
+              <div><label>Exam Mark</label><input id="examMark" type="number" min="0" max="60" step="0.01" required /></div>
+              <div class="form-actions span-2"><button class="btn primary" type="submit">Save Result</button></div>
+            </form>
+          </article>
+          <article class="panel">
+            <div class="panel-header inline-between"><div><h3>Results Register</h3><p class="muted small">Report-form ready results</p></div><input id="examSearch" class="table-search" placeholder="Search results" /></div>
+            <div class="summary-badges" id="examSummary"></div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Student</th><th>Subject</th><th>CAT</th><th>Exam</th><th>Total</th><th>Grade</th></tr></thead>
+                <tbody id="examTableBody"></tbody>
+              </table>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section id="staff" class="section">
+        <div class="panel-grid two uneven">
+          <article class="panel">
+            <div class="panel-header"><div><h3>Staff Records</h3><p class="muted small">Teachers list and attendance support</p></div></div>
+            <form id="staffForm" class="form-grid">
+              <input type="hidden" id="staffId" />
+              <div><label>Staff No</label><input id="staffNo" required placeholder="STF/001" /></div>
+              <div><label>Full Name</label><input id="staffName" required /></div>
+              <div><label>Role</label><input id="staffRole" required placeholder="Teacher" /></div>
+              <div><label>Department</label><input id="staffDepartment" placeholder="Academics" /></div>
+              <div><label>Phone</label><input id="staffPhone" placeholder="+2547..." /></div>
+              <div><label>Status</label><select id="staffStatus"><option>Active</option><option>Leave</option><option>Exited</option></select></div>
+              <div class="form-actions span-2"><button class="btn primary" type="submit">Save Staff</button></div>
+            </form>
+          </article>
+          <article class="panel">
+            <div class="panel-header inline-between"><div><h3>Staff List</h3><p class="muted small">Maintain staff directory</p></div><input id="staffSearch" class="table-search" placeholder="Search staff" /></div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Staff No</th><th>Name</th><th>Role</th><th>Department</th><th>Status</th><th>Action</th></tr></thead>
+                <tbody id="staffTableBody"></tbody>
+              </table>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section id="communication" class="section">
+        <div class="panel-grid two uneven">
+          <article class="panel">
+            <div class="panel-header"><div><h3>Communication Centre</h3><p class="muted small">Announcements and SMS-style alerts</p></div></div>
+            <form id="messageForm" class="form-grid">
+              <div><label>Message Type</label><select id="messageType"><option>Announcement</option><option>Fees Reminder</option><option>Meeting Alert</option><option>Payment Confirmation</option></select></div>
+              <div><label>Audience</label><select id="messageAudience"><option>All Parents</option><option>All Students</option><option>Staff</option><option>Finance Defaulters</option></select></div>
+              <div class="span-2"><label>Message</label><textarea id="messageBody" rows="5" required placeholder="Type the message here"></textarea></div>
+              <div class="form-actions span-2"><button class="btn primary" type="submit">Save Message</button></div>
+            </form>
+          </article>
+          <article class="panel">
+            <div class="panel-header inline-between"><div><h3>Message Log</h3><p class="muted small">Track announcements and parent alerts</p></div><input id="messageSearch" class="table-search" placeholder="Search messages" /></div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Date</th><th>Type</th><th>Audience</th><th>Message</th></tr></thead>
+                <tbody id="messageTableBody"></tbody>
+              </table>
+            </div>
           </article>
         </div>
       </section>
 
       <section id="reports" class="section">
-        <div class="panel-grid two uneven">
+        <div class="panel-grid two">
           <article class="panel">
-            <div class="panel-header inline-between">
-              <div><h3>Report Summary</h3><p class="muted small">Collections, refunds and balances</p></div>
-              <div class="actions-row">
-                <button class="btn secondary" id="exportStudentsBtn">Export Students CSV</button>
-                <button class="btn secondary" id="exportPaymentsBtn">Export Receipts CSV</button>
-                <button class="btn secondary" id="exportInvoicesBtn">Export Invoices CSV</button>
-                <button class="btn secondary" id="exportRefundsBtn">Export Refunds CSV</button>
-              </div>
+            <div class="panel-header"><div><h3>Simple Reports</h3><p class="muted small">Fee balances, class performance and attendance summary</p></div></div>
+            <div id="reportsHighlights" class="report-grid"></div>
+            <div class="report-actions">
+              <button class="btn secondary" id="exportStudentsCsvBtn">Export Students CSV</button>
+              <button class="btn secondary" id="exportFinanceCsvBtn">Export Finance CSV</button>
+              <button class="btn secondary" id="exportResultsCsvBtn">Export Results CSV</button>
             </div>
-            <div class="report-grid">
-              <div class="report-card"><span>Today Collections</span><strong id="dailyCollections">KES 0.00</strong></div>
-              <div class="report-card"><span>Posted Invoices</span><strong id="reportTotalInvoices">0</strong></div>
-              <div class="report-card"><span>Outstanding Amount</span><strong id="reportOutstanding">KES 0.00</strong></div>
-              <div class="report-card"><span>Cleared Students</span><strong id="reportCleared">0</strong></div>
-            </div>
-            <div id="reportHighlights" class="list-stack compact empty m-top">No report highlights yet.</div>
           </article>
           <article class="panel">
-            <div class="panel-header"><div><h3>Student Statement</h3><p class="muted small">Generate a printable statement</p></div></div>
-            <div class="form-grid statement-box">
-              <div><label>Student</label><select id="statementStudent"></select></div>
-              <div><label>As At Date</label><input type="date" id="statementDate" /></div>
-              <div class="form-actions full-width"><button class="btn primary" id="generateStatementBtn" type="button">Generate Statement</button></div>
-            </div>
-            <div id="statementPreview" class="statement-preview empty">Choose a student and generate a statement.</div>
+            <div class="panel-header"><div><h3>Audit Trail</h3><p class="muted small">Every major save, post and reverse action</p></div></div>
+            <div id="auditTrail" class="list-stack empty">No audit entries yet.</div>
           </article>
         </div>
       </section>
 
-
       <section id="users" class="section">
         <div class="panel-grid two uneven">
           <article class="panel">
-            <div class="panel-header"><div><h3>User Administration</h3><p class="muted small">Administrator can create users, roles and custom privileges</p></div></div>
+            <div class="panel-header"><div><h3>Users & Privileges</h3><p class="muted small">Admin can create approval users and control access</p></div></div>
             <form id="userForm" class="form-grid">
               <input type="hidden" id="userId" />
-              <div><label>Full Name</label><input type="text" id="userFullName" placeholder="e.g. Jane Atieno" required /></div>
-              <div><label>Username</label><input type="text" id="userUsername" placeholder="e.g. finance.officer" required /></div>
-              <div><label>Password</label><input type="text" id="userPassword" placeholder="Create password" required /></div>
-              <div><label>Role</label><select id="userRole"><option>Administrator</option><option>CEO</option><option>Finance Officer</option><option>Bursar</option><option>Cashier</option><option>Approver</option><option>Custom</option></select></div>
+              <div><label>Full Name</label><input id="userFullName" required /></div>
+              <div><label>Username</label><input id="userUsername" required /></div>
+              <div><label>Password</label><input id="userPassword" required /></div>
+              <div><label>Role</label><select id="userRole"><option>Administrator</option><option>CEO</option><option>Finance Officer</option><option>Bursar</option><option>Teacher</option><option>Cashier</option><option>Approver</option><option>Custom</option></select></div>
               <div><label>Status</label><select id="userStatus"><option>Active</option><option>Inactive</option></select></div>
-              <div><label>Approval Limit</label><input type="number" id="approvalLimit" min="0" step="0.01" placeholder="Optional" /></div>
-              <div class="full-width">
-                <label>User Privileges</label>
-                <div id="userPrivilegesGrid" class="privileges-grid"></div>
-              </div>
-              <div class="form-actions full-width"><button class="btn primary" type="submit">Save User</button><button class="btn secondary" type="button" id="clearUserBtn">Clear</button></div>
+              <div><label>Approval Limit</label><input id="approvalLimit" type="number" min="0" step="0.01" value="0" /></div>
+              <div class="span-2"><label>Privileges</label><div id="privilegesGrid" class="check-grid"></div></div>
+              <div class="form-actions span-2"><button class="btn primary" type="submit">Save User</button><button class="btn ghost" type="button" id="clearUserBtn">Clear</button></div>
             </form>
           </article>
           <article class="panel">
-            <div class="panel-header inline-between wrap-gap"><div><h3>Users, Roles & Approval Workflow</h3><p class="muted small">Access control for CEO, Finance Officer and other approvers</p></div><input type="search" id="userSearch" placeholder="Search user..." /></div>
-            <div class="workflow-summary" id="workflowSummary"></div>
-            <div class="table-wrap m-top"><table><thead><tr><th>User</th><th>Role</th><th>Status</th><th>Privileges</th><th>Action</th></tr></thead><tbody id="usersTableBody"></tbody></table></div>
+            <div class="panel-header inline-between"><div><h3>User Accounts</h3><p class="muted small">Access control and workflow roles</p></div><input id="userSearch" class="table-search" placeholder="Search users" /></div>
+            <div id="workflowSummary" class="summary-badges"></div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Name</th><th>Username</th><th>Role</th><th>Status</th><th>Approval Limit</th><th>Action</th></tr></thead>
+                <tbody id="usersTableBody"></tbody>
+              </table>
+            </div>
           </article>
         </div>
       </section>
 
       <section id="settings" class="section">
-        <div class="panel-grid two uneven">
+        <div class="panel-grid two">
           <article class="panel">
-            <div class="panel-header"><div><h3>Institution Settings</h3><p class="muted small">Branding and default billing settings</p></div></div>
+            <div class="panel-header"><div><h3>Institution Settings</h3><p class="muted small">Branding, term and contact details</p></div></div>
             <form id="settingsForm" class="form-grid">
-              <div><label>Institution Name</label><input type="text" id="schoolName" required /></div>
-              <div><label>Current Term</label><input type="text" id="currentTerm" required /></div>
-              <div><label>Phone</label><input type="text" id="schoolPhone" /></div>
-              <div><label>Email</label><input type="email" id="schoolEmail" /></div>
-              <div><label>Currency</label><input type="text" id="currency" maxlength="5" /></div>
-              <div><label>Address</label><input type="text" id="schoolAddress" /></div>
-              <div class="full-width"><label>Footer Note</label><textarea id="footerNote" rows="3"></textarea></div>
-              <div class="form-actions full-width"><button class="btn primary" type="submit">Save Settings</button></div>
+              <div><label>School Name</label><input id="schoolName" required /></div>
+              <div><label>Current Term</label><input id="schoolTerm" required /></div>
+              <div><label>Phone</label><input id="schoolPhone" /></div>
+              <div><label>Email</label><input id="schoolEmail" /></div>
+              <div><label>Currency</label><input id="currency" value="KES" /></div>
+              <div><label>Address</label><input id="schoolAddress" /></div>
+              <div class="span-2"><label>Footer Note</label><input id="footerNote" /></div>
+              <div class="form-actions span-2"><button class="btn primary" type="submit">Save Settings</button></div>
             </form>
           </article>
           <article class="panel">
-            <div class="panel-header"><div><h3>Finance Workflow Notes</h3><p class="muted small">How the system behaves</p></div></div>
-            <div class="feature-list">
-              <div class="feature-item"><strong>Invoice posting</strong><span>Dr Student Debtor, Cr Fee Revenue. Draft invoices do not affect balance until posted.</span></div>
-              <div class="feature-item"><strong>Receipt posting</strong><span>Dr Bank, Cr Student. Only posted receipts reduce the invoiced balance.</span></div>
-              <div class="feature-item"><strong>Refund payment</strong><span>Dr Student / Refund Control, Cr Bank after approval and payment.</span></div>
-              <div class="feature-item"><strong>Reversal control</strong><span>Posted items are not deleted. They are reversed with a reason and audit trail.</span></div>
-              <div class="feature-item"><strong>Bank balances</strong><span>Every posted receipt increases selected bank. Paid refunds reduce the selected bank.</span></div>
-              <div class="feature-item"><strong>Ledger visibility</strong><span>Student ledger shows invoices, receipts, refunds and reversals in one place.</span></div>
+            <div class="panel-header"><div><h3>About this build</h3><p class="muted small">Based on your requested school functionalities</p></div></div>
+            <div class="info-block">
+              <p>This v6 package includes the modules you listed for student records, attendance, fees, exams, communication, staff records and simple reports.</p>
+              <ul>
+                <li>Student admission, update and promotion</li>
+                <li>Daily attendance and attendance summary</li>
+                <li>Fee structure style billing flow with invoice, receipt, refund and reversal</li>
+                <li>Exam mark entry with automatic grade calculation</li>
+                <li>Announcements and SMS-style message log</li>
+                <li>Staff directory plus role-based users and privileges</li>
+              </ul>
             </div>
           </article>
         </div>
@@ -478,16 +421,6 @@
     </main>
   </div>
 
-  <div id="toast" class="toast"></div>
-  <div id="modal" class="modal hidden">
-    <div class="modal-card">
-      <div class="modal-header">
-        <div><h3 id="modalTitle">Preview</h3><p class="muted small">Print-ready output</p></div>
-        <div class="actions-row"><button class="btn secondary" id="printModalBtn">Print</button><button class="btn ghost" id="closeModalBtn">Close</button></div>
-      </div>
-      <div id="modalBody" class="modal-body"></div>
-    </div>
-  </div>
   <script src="app.js"></script>
 </body>
 </html>
