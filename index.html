@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Rainbow Primary ERP Kenya v10 Kenya Top Tier Edition</title>
+  <title>Rainbow Primary ERP Kenya v11 v11 Kenya Top Tier Edition</title>
   <meta name="theme-color" content="#ff7a18" />
   <link rel="stylesheet" href="styles.css" />
 </head>
@@ -13,8 +13,8 @@
       <div class="auth-ribbons"><span>🌈 Child-Friendly</span><span>📱 Mobile First</span><span>🏆 World Class</span></div><div class="brand-row">
         <div class="logo">🌟</div>
         <div>
-          <h1>Rainbow Primary ERP Kenya v10</h1>
-          <p>A top-tier Kenya-friendly primary school system with colorful, mobile-first workflows for admissions, attendance, finance, exams, reports, and approvals.</p>
+          <h1>Rainbow Primary ERP Kenya v11 v11</h1>
+          <p>A production-lite Kenya-friendly primary school system with colorful, mobile-first workflows for admissions, attendance, finance, exams, approvals, and richer reporting.</p>
         </div>
       </div>
       <form id="loginForm" class="form-grid one-col">
@@ -32,8 +32,8 @@
         <div class="brand-panel"><button class="menu-toggle" id="menuToggle" type="button" aria-label="Toggle menu">☰</button>
           <div class="logo">🌈</div>
           <div>
-            <h2 id="brandSchoolName">Rainbow Primary ERP Kenya</h2>
-            <p id="brandTerm">CBC Ready • Colorful • Mobile Friendly</p>
+            <h2 id="brandSchoolName">Rainbow Primary ERP Kenya v11</h2>
+            <p id="brandTerm">CBC Ready • Seamless • Reporting Plus</p>
           </div>
         </div>
         <nav class="nav">
@@ -78,8 +78,8 @@
         <div class="hero-banner">
           <div>
             <span class="hero-kicker">🌈 Smart • Happy • Easy</span>
-            <h3>Welcome to Rainbow Primary World-Class School System</h3>
-            <p>Bright colors, simple navigation, mobile-first actions, and a friendly layout for bursar, teacher, headteacher, and admin users.</p>
+            <h3>Welcome to Rainbow Primary Production-Lite School System</h3>
+            <p>Brighter workflows, richer exports, stronger reporting, and cleaner daily operations for bursar, teacher, headteacher, CEO, and admin users.</p>
           </div>
           <div class="hero-icons" aria-hidden="true">
             <span>🚌</span><span>📚</span><span>🧮</span><span>🎨</span><span>🏆</span>
@@ -108,10 +108,12 @@
           <article class="panel">
             <div class="panel-header"><div><h3>Workflow centre</h3><p class="muted">Fast automation and approval shortcuts</p></div></div>
             <div class="workflow-grid">
+              <button class="quick-action bright" id="autoAllInvoicesBtn" data-jump="finance">🏫 Auto Generate All Class Invoices</button>
               <button class="quick-action bright" id="autoInvoiceBtn" data-jump="finance">⚡ Auto Generate Class Invoices</button>
               <button class="quick-action bright" id="todayReceiptsBtn" data-jump="reports">🧾 View Today Receipts</button>
               <button class="quick-action bright" data-jump="reports">📊 Open Reports Hub</button>
               <button class="quick-action bright" data-jump="settings">🏫 Update School Term</button>
+              <button class="quick-action bright" id="classRegisterBtn" data-jump="reports">📘 Class Register Report</button>
             </div>
             <div id="activityList" class="list-stack empty mt">No activity yet.</div>
           </article>
@@ -353,12 +355,19 @@
             <div class="panel-header"><div><h3>Reports Hub</h3><p class="muted">Pull reports by class, term, status, format, and date</p></div></div>
             <form id="reportForm" class="form-grid">
               <div><label>Report Type</label><select id="reportType">
+                <option value="admissions">Admission Register</option>
                 <option value="balances">Fee Balance Report</option>
                 <option value="collections">Collections Report</option>
                 <option value="attendance">Attendance Summary</option>
                 <option value="performance">Class Performance</option>
                 <option value="ledger">Student Ledger</option>
                 <option value="reportcards">Report Card Summary</option>
+                <option value="classregister">Class Register</option>
+                <option value="banksummary">Bank Collection Summary</option>
+                <option value="parents">Parent Contact List</option>
+                <option value="clearance">Clearance / Balance Status</option>
+                <option value="approvals">Pending Approval Queue</option>
+                <option value="subjectsummary">Subject Performance Summary</option>
                 <option value="staff">Staff Register</option>
                 <option value="audit">Audit Trail</option>
               </select></div>
@@ -373,6 +382,8 @@
                 <button class="btn ghost" type="button" id="exportCsvBtn">Export CSV</button>
                 <button class="btn ghost" type="button" id="exportExcelBtn">Export Excel</button>
                 <button class="btn ghost" type="button" id="exportJsonBtn">Export JSON</button>
+                <button class="btn ghost" type="button" id="exportWordBtn">Export Word</button>
+                <button class="btn ghost" type="button" id="exportHtmlBtn">Export HTML</button>
               </div>
             </form>
             <div class="report-preview mt">
@@ -401,7 +412,8 @@
               <div class="mini-stat"><span>Posted receipts</span><strong id="insightReceipts">0</strong></div>
             </div>
             <div class="table-wrap mt"><table><thead><tr><th>Adm</th><th>Name</th><th>Class</th><th>Balance</th><th>Credit</th></tr></thead><tbody id="reportBalancesTableBody"></tbody></table></div>
-            <div class="panel-header mt"><div><h3>Insights</h3></div></div>
+            <div class="panel-header mt"><div><h3>Insights</h3><p class="muted">Useful operational flags</p></div></div>
+            <div class="chip-row"><span class="chip">Admission register</span><span class="chip">Fee statements</span><span class="chip">Attendance summary</span><span class="chip">CBC support</span></div>
             <div id="reportInsightList" class="list-stack empty">No insights yet.</div>
           </article>
         </div>
@@ -436,6 +448,7 @@
           <form id="settingsForm" class="form-grid">
             <div><label>School Name</label><input id="schoolName" required></div>
             <div><label>Current Term</label><input id="currentTerm" required></div>
+            <div><label>Academic Year</label><input id="academicYear" placeholder="2026"></div>
             <div><label>Phone</label><input id="schoolPhone"></div>
             <div><label>Email</label><input id="schoolEmail"></div>
             <div><label>Address</label><input id="schoolAddress"></div>
