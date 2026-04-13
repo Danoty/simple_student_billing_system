@@ -1,4 +1,4 @@
-const STORAGE_KEY = 'edubill_pro_v7_ultimate';
+const STORAGE_KEY = 'edubill_pro_v9_world_class';
 const ROLE_PRESETS = {
   Administrator:['*'], CEO:['reports_view','finance_manage','finance_post','users_manage'],
   'Finance Officer':['finance_manage','finance_post','reports_view'], Teacher:['students_manage','attendance_manage','exams_manage','reports_view'],
@@ -8,7 +8,7 @@ const PRIVILEGES = [
   ['students_manage','Students'],['attendance_manage','Attendance'],['finance_manage','Finance'],['finance_post','Posting'],['finance_reverse','Reversals'],['exams_manage','Exams'],['staff_manage','Staff'],['reports_view','Reports'],['users_manage','Users'],['settings_manage','Settings']
 ];
 const defaultState = {
-  settings:{schoolName:'EduBill Pro v7 Ultimate',currentTerm:'Academic Year 2026/2027',schoolPhone:'',schoolEmail:'',schoolAddress:'',currency:'KES',footerNote:'Ultimate school ERP demo.'},
+  settings:{schoolName:'Rainbow Primary ERP v9',currentTerm:'Academic Year 2026/2027',schoolPhone:'',schoolEmail:'',schoolAddress:'',currency:'KES',footerNote:'World-class colorful primary school ERP demo.'},
   auth:{currentUser:null,users:[
     {id:'U1',fullName:'System Administrator',username:'admin',password:'admin123',role:'Administrator',status:'Active',approvalLimit:0,privileges:['*']},
     {id:'U2',fullName:'Chief Executive Officer',username:'ceo',password:'ceo123',role:'CEO',status:'Active',approvalLimit:500000,privileges:ROLE_PRESETS.CEO},
@@ -39,13 +39,13 @@ function mapEls(){
   'staffForm','staffId','staffNo','staffName','staffRole','staffDepartment','staffPhone','staffStatus','clearStaffBtn','staffSearch','staffTableBody',
   'reportBalance','reportPerformance','reportAttendance','reportMessages','reportBalancesTableBody','reportInsightList',
   'userForm','userId','userFullName','userUsername','userPassword','userRole','userStatus','approvalLimit','userPrivilegesGrid','clearUserBtn','userSearch','usersTableBody',
-  'settingsForm','schoolName','currentTerm','schoolPhone','schoolEmail','schoolAddress','currency','footerNote'];
-  const out = {}; ids.forEach(id=> out[id]=$(id)); out.navLinks=document.querySelectorAll('.nav-link'); out.sections=document.querySelectorAll('.section'); out.quickActions=document.querySelectorAll('.quick-action'); return out;
+  'settingsForm','schoolName','currentTerm','schoolPhone','schoolEmail','schoolAddress','currency','footerNote','menuToggle','mobileMenuBtn'];
+  const out = {}; ids.forEach(id=> out[id]=$(id)); out.navLinks=document.querySelectorAll('.nav-link'); out.sections=document.querySelectorAll('.section'); out.quickActions=document.querySelectorAll('.quick-action'); out.sidebar=document.getElementById('sidebar'); out.mobileNav=document.querySelector('.mobile-bottom-nav'); return out;
 }
 function init(){ bindEvents(); fillStaticRoleOptions(); renderPrivilegeMatrix(); setToday(); syncAuthUI(); renderAll(); }
 function bindEvents(){
-  els.loginForm.addEventListener('submit', onLogin); els.logoutBtn.addEventListener('click', logout);
-  els.navLinks.forEach(b=>b.addEventListener('click',()=>switchSection(b.dataset.section))); els.quickActions.forEach(b=>b.addEventListener('click',()=>switchSection(b.dataset.jump)));
+  els.loginForm.addEventListener('submit', onLogin); els.logoutBtn.addEventListener('click', logout); if(els.menuToggle) els.menuToggle.addEventListener('click', toggleSidebar); if(els.mobileMenuBtn) els.mobileMenuBtn.addEventListener('click', toggleSidebar);
+  els.navLinks.forEach(b=>b.addEventListener('click',()=>switchSection(b.dataset.section))); window.addEventListener('resize', closeSidebarOnDesktop); els.quickActions.forEach(b=>b.addEventListener('click',()=>switchSection(b.dataset.jump)));
   els.loadSampleBtn.addEventListener('click', loadSampleData); els.backupBtn.addEventListener('click', exportBackup); els.importBackupInput.addEventListener('change', importBackup);
   els.classForm.addEventListener('submit', saveClass); els.clearClassBtn.addEventListener('click', ()=>clearForm('class'));
   els.feeForm.addEventListener('submit', saveFee); els.clearFeeBtn.addEventListener('click', ()=>clearForm('fee'));
@@ -78,10 +78,13 @@ function formatDateTime(d){ if(!d) return 'Never'; return new Date(d).toLocaleSt
 function toast(msg){ els.toast.textContent=msg; els.toast.classList.remove('hidden'); clearTimeout(window.__toast); window.__toast=setTimeout(()=>els.toast.classList.add('hidden'),2600); }
 function logActivity(title, detail=''){ state.activities.unshift({id:uid('ACT'),time:new Date().toISOString(),title,detail}); state.activities=state.activities.slice(0,20); }
 function setToday(){ const today=new Date().toISOString().slice(0,10); ['attendanceDate','invoiceDate','paymentDate','refundDate','examDate'].forEach(id=>{ if(els[id]) els[id].value=today; }); }
-function switchSection(id){ els.navLinks.forEach(b=>b.classList.toggle('active', b.dataset.section===id)); els.sections.forEach(s=>s.classList.toggle('active', s.id===id)); els.pageTitle.textContent = document.querySelector(`.nav-link[data-section="${id}"]`).textContent.replace(/^[^A-Za-z]+\s*/,''); const subtitleMap={setup:'Configure classes, fees, subjects, and assessments.',students:'Manage student records and promotions.',attendance:'Mark attendance by class.',finance:'Invoices, receipts, refunds, and ledgers.',exams:'Marks entry by class, subject, and assessment.',staff:'Manage staff and teachers.',reports:'View balances, performance, and attendance.',users:'Access control and approvals.',settings:'Institution settings.'}; els.pageSubtitle.textContent=subtitleMap[id]||'A user-friendly school system.'; }
+function switchSection(id){ els.navLinks.forEach(b=>b.classList.toggle('active', b.dataset.section===id)); els.sections.forEach(s=>s.classList.toggle('active', s.id===id)); if(window.innerWidth<=900 && els.sidebar) els.sidebar.classList.remove('open'); els.pageTitle.textContent = document.querySelector(`.nav-link[data-section="${id}"]`).textContent.replace(/^[^A-Za-z]+\s*/,''); const subtitleMap={setup:'Configure classes, fees, subjects, and assessments.',students:'Manage student records and promotions.',attendance:'Mark attendance by class.',finance:'Invoices, receipts, refunds, and ledgers.',exams:'Marks entry by class, subject, and assessment.',staff:'Manage staff and teachers.',reports:'View balances, performance, and attendance.',users:'Access control and approvals.',settings:'Institution settings.'}; els.pageSubtitle.textContent=subtitleMap[id]||'A user-friendly school system.'; }
 function syncAuthUI(){ const user=currentUser(); const logged=!!user; els.authScreen.classList.toggle('hidden', logged); els.appShell.classList.toggle('hidden', !logged); if(logged){ els.signedInUser.textContent=user.fullName; els.signedInRole.textContent=user.role; } els.brandSchoolName.textContent=state.settings.schoolName; els.brandTerm.textContent=state.settings.currentTerm; els.lastSavedLabel.textContent=formatDateTime(state.lastSavedAt); }
 function onLogin(e){ e.preventDefault(); const user=state.auth.users.find(u=>u.username===els.loginUsername.value.trim() && u.password===els.loginPassword.value && u.status==='Active'); if(!user) return toast('Invalid username or password'); state.auth.currentUser={id:user.id,fullName:user.fullName,username:user.username,role:user.role,privileges:user.privileges}; persist('Login successful'); syncAuthUI(); renderAll(); }
 function logout(){ state.auth.currentUser=null; persist('Logged out'); syncAuthUI(); }
+function toggleSidebar(){ if(!els.sidebar) return; els.sidebar.classList.toggle('open'); }
+function closeSidebarOnDesktop(){ if(window.innerWidth>900 && els.sidebar) els.sidebar.classList.remove('open'); }
+
 
 function renderAll(){ renderSelectOptions(); renderDashboard(); renderActivities(); renderClasses(); renderFees(); renderSubjects(); renderAssessments(); renderStaff(); renderStudents(); renderFinance(); renderResults(); renderReports(); renderUsers(); renderSettings(); }
 function renderActivities(){ els.activityList.innerHTML = state.activities.length ? state.activities.map(a=>`<div class="list-item"><strong>${escapeHtml(a.title)}</strong><div class="muted">${escapeHtml(a.detail)} · ${formatDateTime(a.time)}</div></div>`).join('') : 'No activity yet.'; }
@@ -202,6 +205,7 @@ function renderSettings(){ ['schoolName','currentTerm','schoolPhone','schoolEmai
 function saveSettings(e){ e.preventDefault(); if(!requirePrivilege('settings_manage')) return; ['schoolName','currentTerm','schoolPhone','schoolEmail','schoolAddress','currency','footerNote'].forEach(k=>state.settings[k]=els[k].value); persist('Settings saved'); syncAuthUI(); renderAll(); }
 
 function loadSampleData(){
+  closeSidebarOnDesktop();
   if(!confirm('Load sample data? Existing data remains.')) return;
   if(!state.staff.length){ state.staff.push({id:'ST1',staffNo:'T001',name:'Mary Achieng',role:'Teacher',department:'Junior School',phone:'',status:'Active'},{id:'ST2',staffNo:'T002',name:'Peter Otieno',role:'Teacher',department:'Upper School',phone:'',status:'Active'}); }
   if(!state.classes.length){ state.classes.push({id:'C1',name:'Grade 7',stream:'A',teacherId:'ST1',status:'Active'},{id:'C2',name:'Grade 8',stream:'A',teacherId:'ST2',status:'Active'}); }
@@ -214,7 +218,7 @@ function loadSampleData(){
   persist('Sample data loaded'); renderAll();
 }
 
-function exportBackup(){ const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='edubill_pro_v7_ultimate_backup.json'; a.click(); URL.revokeObjectURL(a.href); }
+function exportBackup(){ const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='edubill_pro_v9_world_class_backup.json'; a.click(); URL.revokeObjectURL(a.href); }
 function importBackup(e){ const file=e.target.files[0]; if(!file) return; const reader=new FileReader(); reader.onload=()=>{ try{ const data=JSON.parse(reader.result); Object.keys(defaultState).forEach(k=>state[k]=data[k]??structuredClone(defaultState[k])); persist('Backup imported'); syncAuthUI(); renderAll(); }catch{ toast('Invalid backup file'); } }; reader.readAsText(file); }
 
 function clearForm(type){ const map={class:['classId','className','classStream','classTeacherId','classStatus'],fee:['feeId','feeClassId','feeName','feeTerm','feeAmount'],subject:['subjectId','subjectName'],assessment:['assessmentId','assessmentName','assessmentOutOf'],student:['studentId','admissionNo','studentName','studentClassId','studentClassTeacher','studentFeeHint','studentParent','studentPhone','studentStatus','studentNotes'],staff:['staffId','staffNo','staffName','staffRole','staffDepartment','staffPhone','staffStatus'],bank:['bankId','bankName','bankAccountNo','bankBranch','bankStatus'],invoice:['invoiceId','invoiceStudentId','invoiceTerm','invoiceAmount','invoiceDescription'],payment:['paymentId','paymentStudentId','paymentInvoiceId','paymentBankId','paymentMethod','paymentAmount'],refund:['refundId','refundStudentId','refundCreditHint','refundBankId','refundAmount','refundReason'],user:['userId','userFullName','userUsername','userPassword','userRole','userStatus','approvalLimit']}; (map[type]||[]).forEach(id=>{ if(els[id]) els[id].value=''; }); if(type==='assessment') els.assessmentOutOf.value=100; if(type==='payment') els.paymentMethod.value='Cash'; if(type==='class' || type==='student' || type==='bank' || type==='staff') { if(els[`${type}Status`]) els[`${type}Status`].value='Active'; } if(type==='user'){ els.userStatus.value='Active'; els.approvalLimit.value=0; fillStaticRoleOptions(); renderPrivilegeMatrix(); } setToday(); updateStudentClassHints(); updateRefundCreditHint(); }

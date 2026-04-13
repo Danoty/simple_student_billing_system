@@ -3,18 +3,18 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Rainbow Primary ERP Ultimate School Edition School Edition</title>
-  <meta name="theme-color" content="#2563eb" />
+  <title>Rainbow Primary ERP v9 World Class Edition</title>
+  <meta name="theme-color" content="#ff7a18" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <div id="authScreen" class="auth-screen">
-    <div class="auth-card">
-      <div class="brand-row">
-        <div class="logo">E</div>
+    <div class="auth-card school-auth-card">
+      <div class="auth-ribbons"><span>🌈 Child-Friendly</span><span>📱 Mobile First</span><span>🏆 World Class</span></div><div class="brand-row">
+        <div class="logo">🌟</div>
         <div>
-          <h1>Rainbow Primary ERP Ultimate</h1>
-          <p>A colorful, mobile-friendly primary school system with visible menus, finance, attendance, exams, staff, and reports.</p>
+          <h1>Rainbow Primary ERP v9</h1>
+          <p>A bright, world-class primary school system with playful colors, easy mobile navigation, cleaner screens, and quick access for admin, teacher, bursar, and finance users.</p>
         </div>
       </div>
       <form id="loginForm" class="form-grid one-col">
@@ -27,10 +27,10 @@
   </div>
 
   <div id="appShell" class="app-shell hidden">
-    <aside class="sidebar">
+    <aside class="sidebar" id="sidebar">
       <div>
-        <div class="brand-panel">
-          <div class="logo">E</div>
+        <div class="brand-panel"><button class="menu-toggle" id="menuToggle" type="button" aria-label="Toggle menu">☰</button>
+          <div class="logo">🌈</div>
           <div>
             <h2 id="brandSchoolName">Rainbow Primary ERP</h2>
             <p id="brandTerm">Fun • Colorful • Mobile Friendly</p>
@@ -61,12 +61,12 @@
     </aside>
 
     <main class="main-content">
-      <header class="topbar">
+      <header class="topbar"><div class="floating-decor decor-a"></div><div class="floating-decor decor-b"></div>
         <div>
           <h2 id="pageTitle">Dashboard</h2>
           <p id="pageSubtitle" class="muted">A user-friendly school system.</p>
         </div>
-        <div class="topbar-actions">
+        <div class="topbar-actions"><button class="btn secondary mobile-only" id="mobileMenuBtn" type="button">☰ Menu</button>
           <div class="chip">Saved: <strong id="lastSavedLabel">Never</strong></div>
           <button class="btn ghost" id="backupBtn">Export Backup</button>
           <label class="btn ghost upload-btn">Import Backup<input id="importBackupInput" type="file" accept="application/json" hidden></label>
@@ -96,7 +96,7 @@
         <div class="grid-2 mt">
           <article class="panel">
             <div class="panel-header"><div><h3>Quick actions</h3><p class="muted">Jump fast</p></div></div>
-            <div class="quick-grid">
+            <div class="module-ribbon"><div class="module-pill">🎒 Students</div><div class="module-pill">🧾 Finance</div><div class="module-pill">✅ Attendance</div><div class="module-pill">📝 Exams</div><div class="module-pill">👩‍🏫 Staff</div><div class="module-pill">📊 Reports</div></div><div class="quick-grid">
               <button class="quick-action" data-jump="setup">Class Setup</button>
               <button class="quick-action" data-jump="students">Add Student</button>
               <button class="quick-action" data-jump="attendance">Mark Attendance</button>
@@ -394,6 +394,14 @@
       </section>
     </main>
   </div>
+
+  <nav class="mobile-bottom-nav" aria-label="Mobile navigation">
+    <button class="nav-link active" data-section="dashboard">🏠<span>Home</span></button>
+    <button class="nav-link" data-section="students">🎒<span>Students</span></button>
+    <button class="nav-link" data-section="finance">💳<span>Finance</span></button>
+    <button class="nav-link" data-section="exams">📝<span>Exams</span></button>
+    <button class="nav-link" data-section="reports">📊<span>Reports</span></button>
+  </nav>
 
   <div id="toast" class="toast hidden"></div>
   <script src="app.js"></script>
