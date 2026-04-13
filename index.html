@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>EduBill Pro v7 Ultimate</title>
+  <title>EduBill Kids ERP v7 Ultimate</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -12,8 +12,8 @@
       <div class="brand-row">
         <div class="logo">E</div>
         <div>
-          <h1>EduBill Pro v7 Ultimate</h1>
-          <p>Visible menus, class setup, ledgers, refunds with credit checks, attendance by class, subject and exam setup, and bulk promotion.</p>
+          <h1>EduBill Kids ERP v7 Ultimate</h1>
+          <p>Bright, mobile-friendly school system for primary schools with clear menus, ledgers, class setup, attendance, exams, and finance tools.</p>
         </div>
       </div>
       <form id="loginForm" class="form-grid one-col">
@@ -58,6 +58,7 @@
       </div>
     </aside>
 
+    <div id="mobileBackdrop" class="mobile-backdrop"></div>
     <main class="main-content">
       <header class="topbar">
         <div>
@@ -65,6 +66,7 @@
           <p id="pageSubtitle" class="muted">A user-friendly school system.</p>
         </div>
         <div class="topbar-actions">
+          <button class="btn menu-btn" id="menuToggle">☰ Menu</button>
           <div class="chip">Saved: <strong id="lastSavedLabel">Never</strong></div>
           <button class="btn ghost" id="backupBtn">Export Backup</button>
           <label class="btn ghost upload-btn">Import Backup<input id="importBackupInput" type="file" accept="application/json" hidden></label>

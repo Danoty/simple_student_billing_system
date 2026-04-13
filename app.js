@@ -8,7 +8,7 @@ const PRIVILEGES = [
   ['students_manage','Students'],['attendance_manage','Attendance'],['finance_manage','Finance'],['finance_post','Posting'],['finance_reverse','Reversals'],['exams_manage','Exams'],['staff_manage','Staff'],['reports_view','Reports'],['users_manage','Users'],['settings_manage','Settings']
 ];
 const defaultState = {
-  settings:{schoolName:'EduBill Pro v7 Ultimate',currentTerm:'Academic Year 2026/2027',schoolPhone:'',schoolEmail:'',schoolAddress:'',currency:'KES',footerNote:'Ultimate school ERP demo.'},
+  settings:{schoolName:'EduBill Kids ERP v7 Ultimate',currentTerm:'Academic Year 2026/2027',schoolPhone:'',schoolEmail:'',schoolAddress:'',currency:'KES',footerNote:'Bright, mobile-friendly primary school ERP demo.'},
   auth:{currentUser:null,users:[
     {id:'U1',fullName:'System Administrator',username:'admin',password:'admin123',role:'Administrator',status:'Active',approvalLimit:0,privileges:['*']},
     {id:'U2',fullName:'Chief Executive Officer',username:'ceo',password:'ceo123',role:'CEO',status:'Active',approvalLimit:500000,privileges:ROLE_PRESETS.CEO},
@@ -27,7 +27,7 @@ let marksLoadedIds = [];
 
 init();
 function mapEls(){
-  const ids = ['authScreen','appShell','loginForm','loginUsername','loginPassword','signedInUser','signedInRole','brandSchoolName','brandTerm','pageTitle','pageSubtitle','lastSavedLabel','loadSampleBtn','logoutBtn','backupBtn','importBackupInput','toast','activityList',
+  const ids = ['authScreen','appShell','loginForm','loginUsername','loginPassword','signedInUser','signedInRole','brandSchoolName','brandTerm','pageTitle','pageSubtitle','lastSavedLabel','loadSampleBtn','logoutBtn','backupBtn','importBackupInput','toast','activityList','menuToggle','mobileBackdrop',
   'statStudents','statClasses','statInvoiced','statCollected','statOutstanding','statCredits',
   'classForm','classId','className','classStream','classTeacherId','classStatus','clearClassBtn','classesTableBody',
   'feeForm','feeId','feeClassId','feeName','feeTerm','feeAmount','clearFeeBtn','feesTableBody',
@@ -45,7 +45,9 @@ function mapEls(){
 function init(){ bindEvents(); fillStaticRoleOptions(); renderPrivilegeMatrix(); setToday(); syncAuthUI(); renderAll(); }
 function bindEvents(){
   els.loginForm.addEventListener('submit', onLogin); els.logoutBtn.addEventListener('click', logout);
-  els.navLinks.forEach(b=>b.addEventListener('click',()=>switchSection(b.dataset.section))); els.quickActions.forEach(b=>b.addEventListener('click',()=>switchSection(b.dataset.jump)));
+  if(els.menuToggle) els.menuToggle.addEventListener('click', toggleMenu);
+  if(els.mobileBackdrop) els.mobileBackdrop.addEventListener('click', closeMenu);
+  els.navLinks.forEach(b=>b.addEventListener('click',()=>{switchSection(b.dataset.section); closeMenu();})); els.quickActions.forEach(b=>b.addEventListener('click',()=>{switchSection(b.dataset.jump); closeMenu();}));
   els.loadSampleBtn.addEventListener('click', loadSampleData); els.backupBtn.addEventListener('click', exportBackup); els.importBackupInput.addEventListener('change', importBackup);
   els.classForm.addEventListener('submit', saveClass); els.clearClassBtn.addEventListener('click', ()=>clearForm('class'));
   els.feeForm.addEventListener('submit', saveFee); els.clearFeeBtn.addEventListener('click', ()=>clearForm('fee'));
@@ -63,6 +65,9 @@ function bindEvents(){
   els.userForm.addEventListener('submit', saveUser); els.clearUserBtn.addEventListener('click', ()=>clearForm('user')); els.userSearch.addEventListener('input', renderUsers); els.userRole.addEventListener('change', onRoleChange);
   els.settingsForm.addEventListener('submit', saveSettings);
 }
+
+function toggleMenu(){ document.body.classList.toggle('menu-open'); }
+function closeMenu(){ document.body.classList.remove('menu-open'); }
 
 function loadState(){ try{ const raw = localStorage.getItem(STORAGE_KEY); return raw?mergeDefault(JSON.parse(raw), structuredClone(defaultState)):structuredClone(defaultState);}catch{return structuredClone(defaultState);} }
 function mergeDefault(saved, def){ for(const k in def){ if(saved[k]===undefined) saved[k]=def[k]; else if(def[k] && typeof def[k]==='object' && !Array.isArray(def[k])) saved[k]=mergeDefault(saved[k], def[k]); } return saved; }
