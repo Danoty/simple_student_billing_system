@@ -1,31 +1,21 @@
-# EduBill Pro v6 - Full School System
+# EduBill Pro v7 Ultimate
 
-This is a web-based demo school management system built as a front-end prototype.
+Open `index.html` in a browser.
 
-## Main modules
-- Dashboard
-- Students Records
-- Attendance
-- Finance: banks, invoices, receipts, refunds, reversals
-- Exams & Results
-- Staff Records
-- Communication: announcements and SMS log
-- Reports
-- Users, roles, privileges and approval limits
-- Settings and audit trail
-
-## Demo logins
+Demo users:
 - admin / admin123
 - ceo / ceo123
 - finance / finance123
 - teacher / teacher123
 
-## Notes
-- Data is stored in browser localStorage.
-- Use **Load Sample Data** after login to populate demo records.
-- Use **Export Backup** and **Import Backup** for portability.
-
-## Files
-- index.html
-- styles.css
-- app.js
+Main upgrades in v7:
+- Very visible sidebar menu and logout button
+- Full student ledger
+- Refund validation against available credit
+- Class setup linked to class teacher
+- Fee setup linked to class
+- Student class selection auto-populates teacher and fee hints
+- Attendance by class
+- Subject setup and class-subject mapping
+- Assessment setup for CATs and exams
+- Bulk promotion with Select All / Deselect All
