@@ -1,99 +1,114 @@
-const STORAGE_KEY = 'edubill_school_erp_v6';
-const PRIVILEGES = ['dashboard','students','attendance','finance','exams','staff','communication','reports','users','settings'];
+const STORAGE_KEY = 'edubill_pro_v6_full_school_system';
+const PRIVILEGES = [
+  { key:'students_manage', label:'Students', description:'Create and update student records' },
+  { key:'attendance_manage', label:'Attendance', description:'Mark and review attendance' },
+  { key:'finance_manage', label:'Finance', description:'Create finance documents' },
+  { key:'finance_post', label:'Post Transactions', description:'Post invoices, receipts and refunds' },
+  { key:'finance_reverse', label:'Reverse Transactions', description:'Reverse posted transactions' },
+  { key:'exams_manage', label:'Exams', description:'Enter marks and results' },
+  { key:'staff_manage', label:'Staff', description:'Manage staff records' },
+  { key:'communication_manage', label:'Communication', description:'Announcements and SMS alerts' },
+  { key:'reports_view', label:'Reports', description:'View reports and insights' },
+  { key:'users_manage', label:'Users & Access', description:'Create users and control access' },
+  { key:'settings_manage', label:'Settings', description:'Edit institution settings' }
+];
+
+const ROLE_PRESETS = {
+  'Administrator':['*'],
+  'CEO':['reports_view','finance_manage','finance_post','communication_manage'],
+  'Finance Officer':['finance_manage','finance_post','reports_view'],
+  'Bursar':['finance_manage','finance_post','finance_reverse','reports_view'],
+  'Cashier':['finance_manage','finance_post'],
+  'Teacher':['students_manage','attendance_manage','exams_manage','reports_view','communication_manage'],
+  'Approver':['finance_post','reports_view'],
+  'Custom':[]
+};
 
 const defaultState = {
   settings: {
-    schoolName: 'EduBill School ERP v6',
-    schoolTerm: 'Term 1 2026',
-    schoolPhone: '+254 700 000000',
-    schoolEmail: 'info@school.ac.ke',
-    schoolAddress: 'Main Campus',
-    currency: 'KES',
-    footerNote: 'Simple school ERP demo.'
+    schoolName:'EduBill Pro v6',
+    currentTerm:'Academic Year 2026/2027',
+    schoolPhone:'+254 700 000000',
+    schoolEmail:'info@school.ac.ke',
+    schoolAddress:'Main Campus',
+    currency:'KES',
+    footerNote:'Full school system demo.'
   },
   auth: {
     users: [
-      { id: uid('USR'), fullName: 'System Administrator', username: 'admin', password: 'admin123', role: 'Administrator', status: 'Active', approvalLimit: 999999999, privileges: ['*'] },
-      { id: uid('USR'), fullName: 'Chief Executive Officer', username: 'ceo', password: 'ceo123', role: 'CEO', status: 'Active', approvalLimit: 500000, privileges: ['dashboard','reports','users','settings','finance','students'] },
-      { id: uid('USR'), fullName: 'Finance Officer', username: 'finance', password: 'finance123', role: 'Finance Officer', status: 'Active', approvalLimit: 100000, privileges: ['dashboard','finance','reports','students','communication'] },
-      { id: uid('USR'), fullName: 'Lead Teacher', username: 'teacher', password: 'teacher123', role: 'Teacher', status: 'Active', approvalLimit: 0, privileges: ['dashboard','students','attendance','exams','communication','reports'] }
+      { id:'USR_ADMIN', fullName:'System Administrator', username:'admin', password:'admin123', role:'Administrator', active:true, approvalLimit:0, privileges:['*'] },
+      { id:'USR_CEO', fullName:'Chief Executive Officer', username:'ceo', password:'ceo123', role:'CEO', active:true, approvalLimit:500000, privileges:ROLE_PRESETS['CEO'] },
+      { id:'USR_FIN', fullName:'Finance Officer', username:'finance', password:'finance123', role:'Finance Officer', active:true, approvalLimit:150000, privileges:ROLE_PRESETS['Finance Officer'] },
+      { id:'USR_TEACH', fullName:'Senior Teacher', username:'teacher', password:'teacher123', role:'Teacher', active:true, approvalLimit:0, privileges:ROLE_PRESETS['Teacher'] }
     ],
-    currentUser: null
+    currentUser:null
   },
-  students: [],
-  attendance: [],
-  banks: [],
-  invoices: [],
-  payments: [],
-  refunds: [],
-  exams: [],
-  staff: [],
-  messages: [],
-  activities: [],
-  lastSavedAt: null
+  students:[],
+  attendance:[],
+  banks:[],
+  invoices:[],
+  payments:[],
+  refunds:[],
+  exams:[],
+  staff:[],
+  communications:[],
+  activities:[],
+  audit:[],
+  lastSavedAt:null
 };
 
 const state = loadState();
 const $ = id => document.getElementById(id);
 const els = {
-  authScreen: $('authScreen'), appShell: $('appShell'), loginForm: $('loginForm'), loginUsername: $('loginUsername'), loginPassword: $('loginPassword'),
-  navLinks: [...document.querySelectorAll('.nav-link')], sections: [...document.querySelectorAll('.section')], pageTitle: $('pageTitle'), pageSubtitle: $('pageSubtitle'), signedInUser: $('signedInUser'),
-  brandSchoolName: $('brandSchoolName'), brandSchoolTerm: $('brandSchoolTerm'), lastSavedAt: $('lastSavedAt'),
-  loadSampleBtn: $('loadSampleBtn'), exportBackupBtn: $('exportBackupBtn'), importBackupInput: $('importBackupInput'), logoutBtn: $('logoutBtn'), printPageBtn: $('printPageBtn'),
-  statStudents: $('statStudents'), statStaff: $('statStaff'), statAttendance: $('statAttendance'), statInvoiced: $('statInvoiced'), statCollected: $('statCollected'), statOutstanding: $('statOutstanding'),
-  dashboardHighlights: $('dashboardHighlights'), recentActivity: $('recentActivity'), outstandingStudents: $('outstandingStudents'),
-  studentForm: $('studentForm'), studentId: $('studentId'), admissionNo: $('admissionNo'), studentName: $('studentName'), studentClass: $('studentClass'), parentContact: $('parentContact'), studentGender: $('studentGender'), studentStatus: $('studentStatus'), parentName: $('parentName'), studentNotes: $('studentNotes'), studentSearch: $('studentSearch'), studentsTableBody: $('studentsTableBody'), clearStudentBtn: $('clearStudentBtn'), promoteClassBtn: $('promoteClassBtn'),
-  attendanceForm: $('attendanceForm'), attendanceDate: $('attendanceDate'), attendanceClass: $('attendanceClass'), attendanceStudent: $('attendanceStudent'), attendanceStatus: $('attendanceStatus'), attendanceRemarks: $('attendanceRemarks'), attendanceSearch: $('attendanceSearch'), attendanceSummary: $('attendanceSummary'), attendanceTableBody: $('attendanceTableBody'),
-  bankForm: $('bankForm'), bankId: $('bankId'), bankName: $('bankName'), bankAccount: $('bankAccount'), bankOpeningBalance: $('bankOpeningBalance'),
-  invoiceForm: $('invoiceForm'), invoiceStudent: $('invoiceStudent'), invoiceNumber: $('invoiceNumber'), invoiceDescription: $('invoiceDescription'), invoiceAmount: $('invoiceAmount'), invoiceDueDate: $('invoiceDueDate'),
-  paymentForm: $('paymentForm'), paymentStudent: $('paymentStudent'), paymentBank: $('paymentBank'), receiptNumber: $('receiptNumber'), paymentAmount: $('paymentAmount'), paymentDate: $('paymentDate'), paymentReference: $('paymentReference'),
-  refundForm: $('refundForm'), refundStudent: $('refundStudent'), refundBank: $('refundBank'), refundNumber: $('refundNumber'), refundAmount: $('refundAmount'), refundDate: $('refundDate'), refundReason: $('refundReason'),
-  financeSearch: $('financeSearch'), financeTableBody: $('financeTableBody'), ledgerForm: $('ledgerForm'), ledgerStudent: $('ledgerStudent'), ledgerDate: $('ledgerDate'), ledgerSummary: $('ledgerSummary'), ledgerTableBody: $('ledgerTableBody'),
-  examForm: $('examForm'), examStudent: $('examStudent'), examClass: $('examClass'), examTerm: $('examTerm'), examSubject: $('examSubject'), catMark: $('catMark'), examMark: $('examMark'), examSearch: $('examSearch'), examSummary: $('examSummary'), examTableBody: $('examTableBody'),
-  staffForm: $('staffForm'), staffId: $('staffId'), staffNo: $('staffNo'), staffName: $('staffName'), staffRole: $('staffRole'), staffDepartment: $('staffDepartment'), staffPhone: $('staffPhone'), staffStatus: $('staffStatus'), staffSearch: $('staffSearch'), staffTableBody: $('staffTableBody'),
-  messageForm: $('messageForm'), messageType: $('messageType'), messageAudience: $('messageAudience'), messageBody: $('messageBody'), messageSearch: $('messageSearch'), messageTableBody: $('messageTableBody'),
-  reportsHighlights: $('reportsHighlights'), auditTrail: $('auditTrail'),
-  exportStudentsCsvBtn: $('exportStudentsCsvBtn'), exportFinanceCsvBtn: $('exportFinanceCsvBtn'), exportResultsCsvBtn: $('exportResultsCsvBtn'),
-  userForm: $('userForm'), userId: $('userId'), userFullName: $('userFullName'), userUsername: $('userUsername'), userPassword: $('userPassword'), userRole: $('userRole'), userStatus: $('userStatus'), approvalLimit: $('approvalLimit'), privilegesGrid: $('privilegesGrid'), clearUserBtn: $('clearUserBtn'), userSearch: $('userSearch'), workflowSummary: $('workflowSummary'), usersTableBody: $('usersTableBody'),
-  settingsForm: $('settingsForm'), schoolName: $('schoolName'), schoolTerm: $('schoolTerm'), schoolPhone: $('schoolPhone'), schoolEmail: $('schoolEmail'), currency: $('currency'), schoolAddress: $('schoolAddress'), footerNote: $('footerNote')
+  authScreen:$('authScreen'), appShell:$('appShell'), loginForm:$('loginForm'), loginUsername:$('loginUsername'), loginPassword:$('loginPassword'),
+  navLinks:document.querySelectorAll('.nav-link'), sections:document.querySelectorAll('.section'), pageTitle:$('pageTitle'), pageSubtitle:$('pageSubtitle'),
+  signedInUser:$('signedInUser'), brandSchoolName:$('brandSchoolName'), brandTerm:$('brandTerm'), lastSavedLabel:$('lastSavedLabel'), toast:$('toast'),
+  dashboardSummary:$('dashboardSummary'), outstandingList:$('outstandingList'), activityList:$('activityList'), auditTrailList:$('auditTrailList'),
+  statStudents:$('statStudents'), statStaff:$('statStaff'), statInvoiced:$('statInvoiced'), statCollected:$('statCollected'), statOutstanding:$('statOutstanding'), statAttendanceToday:$('statAttendanceToday'),
+  studentForm:$('studentForm'), studentId:$('studentId'), admissionNo:$('admissionNo'), studentName:$('studentName'), studentClass:$('studentClass'), studentParent:$('studentParent'), studentPhone:$('studentPhone'), studentStatus:$('studentStatus'), studentNotes:$('studentNotes'), studentSearch:$('studentSearch'), studentsTableBody:$('studentsTableBody'), promoteStudentBtn:$('promoteStudentBtn'), clearStudentBtn:$('clearStudentBtn'),
+  attendanceForm:$('attendanceForm'), attendanceDate:$('attendanceDate'), attendanceStudentId:$('attendanceStudentId'), attendanceStatus:$('attendanceStatus'), attendanceRemarks:$('attendanceRemarks'), attendanceSearch:$('attendanceSearch'), attendanceTableBody:$('attendanceTableBody'), attendanceSummaryText:$('attendanceSummaryText'),
+  bankForm:$('bankForm'), bankId:$('bankId'), bankName:$('bankName'), bankAccountNo:$('bankAccountNo'), bankBranch:$('bankBranch'), bankStatus:$('bankStatus'), banksTableBody:$('banksTableBody'),
+  invoiceForm:$('invoiceForm'), invoiceId:$('invoiceId'), invoiceDate:$('invoiceDate'), invoiceStudentId:$('invoiceStudentId'), invoiceTerm:$('invoiceTerm'), invoiceAmount:$('invoiceAmount'), invoiceDescription:$('invoiceDescription'), invoicesTableBody:$('invoicesTableBody'),
+  paymentForm:$('paymentForm'), paymentId:$('paymentId'), paymentDate:$('paymentDate'), paymentStudentId:$('paymentStudentId'), paymentInvoiceId:$('paymentInvoiceId'), paymentBankId:$('paymentBankId'), paymentAmount:$('paymentAmount'), paymentMethod:$('paymentMethod'), paymentsTableBody:$('paymentsTableBody'),
+  refundForm:$('refundForm'), refundId:$('refundId'), refundDate:$('refundDate'), refundStudentId:$('refundStudentId'), refundBankId:$('refundBankId'), refundAmount:$('refundAmount'), refundReason:$('refundReason'), refundsTableBody:$('refundsTableBody'),
+  bankCount:$('bankCount'), draftInvoiceCount:$('draftInvoiceCount'), postedReceiptCount:$('postedReceiptCount'), paidRefundCount:$('paidRefundCount'),
+  examForm:$('examForm'), examId:$('examId'), examDate:$('examDate'), examStudentId:$('examStudentId'), examSubject:$('examSubject'), examAssessment:$('examAssessment'), examMarks:$('examMarks'), examOutOf:$('examOutOf'), examsTableBody:$('examsTableBody'), examSearch:$('examSearch'),
+  staffForm:$('staffForm'), staffId:$('staffId'), staffNo:$('staffNo'), staffName:$('staffName'), staffRole:$('staffRole'), staffDepartment:$('staffDepartment'), staffPhone:$('staffPhone'), staffStatus:$('staffStatus'), staffTableBody:$('staffTableBody'), staffSearch:$('staffSearch'),
+  announcementForm:$('announcementForm'), announcementTitle:$('announcementTitle'), announcementAudience:$('announcementAudience'), announcementMessage:$('announcementMessage'), smsForm:$('smsForm'), smsStudentId:$('smsStudentId'), smsType:$('smsType'), smsMessage:$('smsMessage'), communicationLog:$('communicationLog'),
+  reportBalance:$('reportBalance'), reportPerformance:$('reportPerformance'), reportAttendance:$('reportAttendance'), reportMessages:$('reportMessages'), reportBalancesTableBody:$('reportBalancesTableBody'), reportInsightList:$('reportInsightList'),
+  userForm:$('userForm'), userId:$('userId'), userFullName:$('userFullName'), userUsername:$('userUsername'), userPassword:$('userPassword'), userRole:$('userRole'), userStatus:$('userStatus'), approvalLimit:$('approvalLimit'), userPrivilegesGrid:$('userPrivilegesGrid'), usersTableBody:$('usersTableBody'), userSearch:$('userSearch'),
+  settingsForm:$('settingsForm'), schoolName:$('schoolName'), currentTerm:$('currentTerm'), schoolPhone:$('schoolPhone'), schoolEmail:$('schoolEmail'), schoolAddress:$('schoolAddress'), currency:$('currency'), footerNote:$('footerNote'),
+  loadSampleBtn:$('loadSampleBtn'), logoutBtn:$('logoutBtn'), backupBtn:$('backupBtn'), importBackupInput:$('importBackupInput'), resetBtn:$('resetBtn')
 };
 
 init();
 
-function init() {
+function init(){
+  setTodayDefaults();
   bindEvents();
-  renderPrivilegeGrid();
-  setDefaultDates();
-  syncBranding();
+  renderPrivilegeMatrix();
   syncAuthUI();
   renderAll();
 }
 
-function bindEvents() {
-  els.loginForm.addEventListener('submit', handleLogin);
-  els.logoutBtn.addEventListener('click', handleLogout);
-  els.printPageBtn.addEventListener('click', () => window.print());
-  els.loadSampleBtn.addEventListener('click', seedSampleData);
-  els.exportBackupBtn.addEventListener('click', exportBackup);
-  els.importBackupInput.addEventListener('change', importBackup);
+function bindEvents(){
+  els.loginForm.addEventListener('submit', onLogin);
   els.navLinks.forEach(btn => btn.addEventListener('click', () => switchSection(btn.dataset.section)));
   document.querySelectorAll('.quick-action').forEach(btn => btn.addEventListener('click', () => switchSection(btn.dataset.jump)));
 
   els.studentForm.addEventListener('submit', saveStudent);
-  els.clearStudentBtn.addEventListener('click', resetStudentForm);
-  els.promoteClassBtn.addEventListener('click', promoteClass);
+  els.clearStudentBtn.addEventListener('click', clearStudentForm);
+  els.promoteStudentBtn.addEventListener('click', promoteSelectedStudent);
   els.studentSearch.addEventListener('input', renderStudents);
 
   els.attendanceForm.addEventListener('submit', saveAttendance);
   els.attendanceSearch.addEventListener('input', renderAttendance);
-  els.attendanceClass.addEventListener('input', syncAttendanceStudentFilter);
 
   els.bankForm.addEventListener('submit', saveBank);
   els.invoiceForm.addEventListener('submit', saveInvoice);
   els.paymentForm.addEventListener('submit', savePayment);
   els.refundForm.addEventListener('submit', saveRefund);
-  els.financeSearch.addEventListener('input', renderFinance);
-  els.ledgerForm.addEventListener('submit', renderLedger);
+  els.paymentStudentId.addEventListener('change', populateInvoiceOptions);
 
   els.examForm.addEventListener('submit', saveExam);
   els.examSearch.addEventListener('input', renderExams);
@@ -101,606 +116,280 @@ function bindEvents() {
   els.staffForm.addEventListener('submit', saveStaff);
   els.staffSearch.addEventListener('input', renderStaff);
 
-  els.messageForm.addEventListener('submit', saveMessage);
-  els.messageSearch.addEventListener('input', renderMessages);
+  els.announcementForm.addEventListener('submit', saveAnnouncement);
+  els.smsForm.addEventListener('submit', saveSms);
 
   els.userForm.addEventListener('submit', saveUser);
-  els.clearUserBtn.addEventListener('click', resetUserForm);
+  els.userRole.addEventListener('change', onRoleChange);
   els.userSearch.addEventListener('input', renderUsers);
-  els.userRole.addEventListener('change', applyRolePresetToForm);
 
   els.settingsForm.addEventListener('submit', saveSettings);
-  els.exportStudentsCsvBtn.addEventListener('click', () => exportCSV('students'));
-  els.exportFinanceCsvBtn.addEventListener('click', () => exportCSV('finance'));
-  els.exportResultsCsvBtn.addEventListener('click', () => exportCSV('results'));
+  els.loadSampleBtn.addEventListener('click', loadSampleData);
+  els.logoutBtn.addEventListener('click', logout);
+  els.backupBtn.addEventListener('click', exportBackup);
+  els.importBackupInput.addEventListener('change', importBackup);
+  els.resetBtn.addEventListener('click', resetAll);
 }
 
-function loadState() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return structuredClone(defaultState);
-    const parsed = JSON.parse(raw);
-    return {
-      ...structuredClone(defaultState),
-      ...parsed,
-      settings: { ...structuredClone(defaultState).settings, ...(parsed.settings || {}) },
-      auth: { ...structuredClone(defaultState).auth, ...(parsed.auth || {}) },
-      students: parsed.students || [], attendance: parsed.attendance || [], banks: parsed.banks || [], invoices: parsed.invoices || [], payments: parsed.payments || [], refunds: parsed.refunds || [], exams: parsed.exams || [], staff: parsed.staff || [], messages: parsed.messages || [], activities: parsed.activities || []
-    };
-  } catch {
-    return structuredClone(defaultState);
-  }
+function loadState(){ try{ const raw = localStorage.getItem(STORAGE_KEY); return raw ? { ...structuredClone(defaultState), ...JSON.parse(raw) } : structuredClone(defaultState); } catch { return structuredClone(defaultState);} }
+function persist(msg='Saved'){ state.lastSavedAt = new Date().toISOString(); localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); els.lastSavedLabel.textContent = formatDateTime(state.lastSavedAt); if(msg) showToast(msg); }
+function uid(prefix='ID'){ return `${prefix}_${Math.random().toString(36).slice(2,8)}${Date.now().toString().slice(-4)}`; }
+function currentUser(){ return state.auth.currentUser; }
+function currentUsername(){ return currentUser()?.username || 'system'; }
+function roleOfCurrentUser(){ return currentUser()?.role || 'Guest'; }
+function money(v){ return `${state.settings.currency || 'KES'} ${Number(v||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}`; }
+function formatDate(d){ if(!d) return ''; const x = new Date(d); return Number.isNaN(x.getTime()) ? d : x.toLocaleDateString(); }
+function formatDateTime(d){ if(!d) return 'Not saved yet'; const x = new Date(d); return Number.isNaN(x.getTime()) ? d : x.toLocaleString(); }
+function setTodayDefaults(){ const t = new Date().toISOString().slice(0,10); ['attendanceDate','invoiceDate','paymentDate','refundDate','examDate'].forEach(id => { if($(id)) $(id).value = t; }); }
+function showToast(message){ els.toast.textContent = message; els.toast.classList.add('show'); clearTimeout(showToast._t); showToast._t = setTimeout(()=>els.toast.classList.remove('show'), 2200); }
+function switchSection(id){ els.sections.forEach(s=>s.classList.toggle('active', s.id===id)); els.navLinks.forEach(n=>n.classList.toggle('active', n.dataset.section===id)); els.pageTitle.textContent = document.querySelector(`.nav-link[data-section="${id}"]`)?.textContent || 'Dashboard'; const sub = {
+  dashboard:'Full school overview and workflow controls.', students:'Admission, profiles and balances.', attendance:'Daily and monthly attendance tracking.', finance:'Banks, invoices, receipts, refunds and reversals.', exams:'Marks entry with auto grading.', staff:'Teachers and support staff records.', communication:'Announcements and SMS alerts.', reports:'Finance, attendance and academic summaries.', users:'Roles, privileges and approval workflow.', settings:'Institution setup and audit trail.'
+ }; els.pageSubtitle.textContent = sub[id] || ''; }
+
+function hasPrivilege(key){ const u = currentUser(); if(!u) return false; const p = u.privileges || ROLE_PRESETS[u.role] || []; return p.includes('*') || p.includes(key); }
+function requirePermission(key, msg='Access denied'){ if(hasPrivilege(key)) return true; showToast(msg); return false; }
+
+function syncAuthUI(){
+  const logged = !!currentUser();
+  els.authScreen.classList.toggle('hidden', logged);
+  els.appShell.classList.toggle('hidden', !logged);
+  els.signedInUser.textContent = currentUser()?.fullName || 'Guest';
+  els.brandSchoolName.textContent = state.settings.schoolName;
+  els.brandTerm.textContent = state.settings.currentTerm;
+  els.lastSavedLabel.textContent = formatDateTime(state.lastSavedAt);
+  fillSettingsForm();
 }
 
-function persist(activity) {
-  state.lastSavedAt = new Date().toISOString();
-  if (activity) addActivity(activity);
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  els.lastSavedAt.textContent = new Date(state.lastSavedAt).toLocaleString();
-}
-
-function addActivity(text) {
-  state.activities.unshift({ id: uid('ACT'), text, at: new Date().toISOString(), by: state.auth.currentUser?.fullName || 'System' });
-  state.activities = state.activities.slice(0, 40);
-}
-
-function handleLogin(e) {
+function onLogin(e){
   e.preventDefault();
-  const user = state.auth.users.find(u => u.username === els.loginUsername.value.trim() && u.password === els.loginPassword.value && u.status === 'Active');
-  if (!user) return alert('Invalid credentials or inactive account.');
-  state.auth.currentUser = { id: user.id, fullName: user.fullName, username: user.username, role: user.role, privileges: user.privileges };
-  persist(`Logged in as ${user.role}`);
+  const user = state.auth.users.find(u => u.username === els.loginUsername.value.trim() && u.password === els.loginPassword.value && u.active !== false);
+  if(!user) return showToast('Invalid login credentials');
+  state.auth.currentUser = { ...user };
+  addAudit('Login', `${user.fullName} signed in.`);
+  logActivity('User login', `${user.fullName} signed in as ${user.role}.`);
+  persist('Login successful.');
   syncAuthUI();
   renderAll();
 }
+function logout(){ if(!currentUser()) return; addAudit('Logout', `${currentUser().fullName} signed out.`); state.auth.currentUser = null; persist('Logged out.'); syncAuthUI(); }
 
-function handleLogout() {
-  state.auth.currentUser = null;
-  persist('Logged out');
-  syncAuthUI();
-}
+function addAudit(title, detail){ state.audit.unshift({ id:uid('AUD'), title, detail, by:currentUsername(), at:new Date().toISOString() }); state.audit = state.audit.slice(0,150); }
+function logActivity(title, detail){ state.activities.unshift({ id:uid('ACT'), title, detail, at:new Date().toISOString() }); state.activities = state.activities.slice(0,50); }
 
-function syncAuthUI() {
-  const loggedIn = !!state.auth.currentUser;
-  els.authScreen.classList.toggle('hidden', loggedIn);
-  els.appShell.classList.toggle('hidden', !loggedIn);
-  els.signedInUser.textContent = loggedIn ? `${state.auth.currentUser.fullName} • ${state.auth.currentUser.role}` : 'Not signed in';
-  applyAccessControl();
-}
-
-function applyAccessControl() {
-  const privileges = state.auth.currentUser?.privileges || [];
-  const all = privileges.includes('*');
-  els.navLinks.forEach(btn => {
-    const allowed = all || privileges.includes(btn.dataset.section);
-    btn.style.display = allowed ? '' : 'none';
-  });
-  const active = document.querySelector('.nav-link.active');
-  if (active && active.style.display === 'none') {
-    const firstAllowed = els.navLinks.find(btn => btn.style.display !== 'none');
-    if (firstAllowed) switchSection(firstAllowed.dataset.section);
-  }
-}
-
-function switchSection(id) {
-  const userPrivs = state.auth.currentUser?.privileges || [];
-  if (!(userPrivs.includes('*') || userPrivs.includes(id))) return;
-  els.navLinks.forEach(btn => btn.classList.toggle('active', btn.dataset.section === id));
-  els.sections.forEach(sec => sec.classList.toggle('active', sec.id === id));
-  els.pageTitle.textContent = document.querySelector(`.nav-link[data-section="${id}"]`)?.textContent || 'Dashboard';
-  const subtitles = {
-    dashboard: 'Overview of students, attendance, finance and school operations.',
-    students: 'Admission, student profile updates and promotion management.',
-    attendance: 'Daily attendance and summary tracking.',
-    finance: 'Banks, invoices, receipts, refunds, reversals and ledger.',
-    exams: 'Enter CATs and exam marks with automatic grading.',
-    staff: 'Teacher and staff record maintenance.',
-    communication: 'Announcements, fee reminders and message logs.',
-    reports: 'Simple fee balance, performance and attendance reports.',
-    users: 'Admin user creation, privileges and approval workflow access.',
-    settings: 'School branding and system configuration.'
-  };
-  els.pageSubtitle.textContent = subtitles[id] || '';
-}
-
-function syncBranding() {
-  const s = state.settings;
-  els.brandSchoolName.textContent = s.schoolName;
-  els.brandSchoolTerm.textContent = s.schoolTerm;
-  els.schoolName.value = s.schoolName;
-  els.schoolTerm.value = s.schoolTerm;
-  els.schoolPhone.value = s.schoolPhone;
-  els.schoolEmail.value = s.schoolEmail;
-  els.currency.value = s.currency;
-  els.schoolAddress.value = s.schoolAddress;
-  els.footerNote.value = s.footerNote;
-  if (state.lastSavedAt) els.lastSavedAt.textContent = new Date(state.lastSavedAt).toLocaleString();
-}
-
-function saveSettings(e) {
-  e.preventDefault();
-  state.settings = {
-    schoolName: els.schoolName.value.trim(), schoolTerm: els.schoolTerm.value.trim(), schoolPhone: els.schoolPhone.value.trim(), schoolEmail: els.schoolEmail.value.trim(), schoolAddress: els.schoolAddress.value.trim(), currency: els.currency.value.trim() || 'KES', footerNote: els.footerNote.value.trim()
-  };
-  persist('Updated institution settings');
-  syncBranding();
-}
-
-function setDefaultDates() {
-  const today = new Date().toISOString().slice(0,10);
-  const due = new Date(Date.now() + 14 * 86400000).toISOString().slice(0,10);
-  els.attendanceDate.value = today;
-  els.paymentDate.value = today;
-  els.refundDate.value = today;
-  els.ledgerDate.value = today;
-  els.invoiceDueDate.value = due;
-}
-
-function renderAll() {
+function renderAll(){
+  if(!currentUser()) return;
   populateSelectors();
-  renderDashboard();
-  renderStudents();
-  renderAttendance();
-  renderFinance();
-  renderLedger();
-  renderExams();
-  renderStaff();
-  renderMessages();
-  renderReports();
-  renderUsers();
+  renderDashboard(); renderStudents(); renderAttendance(); renderFinance(); renderExams(); renderStaff(); renderCommunication(); renderReports(); renderUsers(); renderAuditTrail();
 }
 
-function populateSelectors() {
-  const studentOptions = ['<option value="">Select student</option>'].concat(state.students.map(s => `<option value="${s.id}">${escapeHtml(s.fullName)} (${escapeHtml(s.admissionNo)})</option>`)).join('');
-  ['attendanceStudent','invoiceStudent','paymentStudent','refundStudent','ledgerStudent','examStudent'].forEach(id => { const el = $(id); if (el) el.innerHTML = studentOptions; });
-  const bankOptions = ['<option value="">Select bank</option>'].concat(state.banks.map(b => `<option value="${b.id}">${escapeHtml(b.name)} - ${escapeHtml(b.accountNo)}</option>`)).join('');
-  ['paymentBank','refundBank'].forEach(id => { const el = $(id); if (el) el.innerHTML = bankOptions; });
-  syncAttendanceStudentFilter();
+function populateSelectors(){
+  const studentOptions = `<option value="">Select student</option>` + state.students.map(s=>`<option value="${s.id}">${escapeHtml(s.admissionNo)} - ${escapeHtml(s.name)}</option>`).join('');
+  ['attendanceStudentId','invoiceStudentId','paymentStudentId','refundStudentId','examStudentId'].forEach(id=> { if($(id)) $(id).innerHTML = studentOptions; });
+  const bankOptions = `<option value="">Select bank</option>` + state.banks.filter(b=>b.status==='Active').map(b=>`<option value="${b.id}">${escapeHtml(b.name)}</option>`).join('');
+  ['paymentBankId','refundBankId'].forEach(id=> { if($(id)) $(id).innerHTML = bankOptions; });
+  els.smsStudentId.innerHTML = `<option value="ALL">All students</option>` + state.students.map(s=>`<option value="${s.id}">${escapeHtml(s.name)}</option>`).join('');
+  populateInvoiceOptions();
 }
 
-function saveStudent(e) {
-  e.preventDefault();
-  const payload = {
-    id: els.studentId.value || uid('STD'), admissionNo: els.admissionNo.value.trim(), fullName: els.studentName.value.trim(), className: els.studentClass.value.trim(), parentContact: els.parentContact.value.trim(), gender: els.studentGender.value, status: els.studentStatus.value, parentName: els.parentName.value.trim(), notes: els.studentNotes.value.trim(), createdAt: new Date().toISOString()
-  };
-  upsert(state.students, payload);
-  persist(`Saved student ${payload.fullName}`);
-  resetStudentForm();
-  populateSelectors();
-  renderAll();
+function saveStudent(e){ e.preventDefault(); if(!requirePermission('students_manage','You cannot manage students.')) return; const id = els.studentId.value || uid('STD'); const existing = state.students.find(s=>s.id===id); const student = { id, admissionNo:els.admissionNo.value.trim(), name:els.studentName.value.trim(), className:els.studentClass.value.trim(), parent:els.studentParent.value.trim(), phone:els.studentPhone.value.trim(), status:els.studentStatus.value, notes:els.studentNotes.value.trim(), createdAt: existing?.createdAt || new Date().toISOString(), updatedAt:new Date().toISOString() };
+  if(existing) Object.assign(existing, student); else state.students.push(student);
+  addAudit(existing?'Student updated':'Student created', `${student.name} (${student.admissionNo}) saved.`); logActivity(existing?'Student updated':'Student added', `${student.name} profile saved.`); persist('Student saved.'); clearStudentForm(); renderAll(); }
+function clearStudentForm(){ els.studentForm.reset(); els.studentId.value=''; els.studentStatus.value='Active'; }
+function promoteSelectedStudent(){ if(!requirePermission('students_manage','You cannot promote students.')) return; const id = els.studentId.value; const s = state.students.find(x=>x.id===id); if(!s) return showToast('Select a student first from the table.'); s.className = promoteClassName(s.className); s.updatedAt = new Date().toISOString(); addAudit('Student promoted', `${s.name} promoted to ${s.className}.`); logActivity('Promotion', `${s.name} moved to ${s.className}.`); persist('Student promoted.'); renderAll(); }
+function promoteClassName(text){ const m = String(text).match(/(\d+)/); if(!m) return `${text} Next`; const next = Number(m[1])+1; return text.replace(m[1], String(next)); }
+function renderStudents(){ const q = els.studentSearch.value.trim().toLowerCase(); const rows = state.students.filter(s => [s.admissionNo,s.name,s.className,s.status].join(' ').toLowerCase().includes(q)).map(s=>{ const bal = studentBalance(s.id); return `<tr><td>${escapeHtml(s.admissionNo)}</td><td>${escapeHtml(s.name)}</td><td>${escapeHtml(s.className)}</td><td><span class="badge ${s.status==='Active'?'success':'warn'}">${escapeHtml(s.status)}</span></td><td>${money(bal)}</td><td><button class="table-btn" onclick="editStudent('${s.id}')">Edit</button></td></tr>`; }).join(''); els.studentsTableBody.innerHTML = rows || `<tr><td colspan="6" class="muted">No students found.</td></tr>`; }
+window.editStudent = function(id){ const s = state.students.find(x=>x.id===id); if(!s) return; els.studentId.value=s.id; els.admissionNo.value=s.admissionNo; els.studentName.value=s.name; els.studentClass.value=s.className; els.studentParent.value=s.parent; els.studentPhone.value=s.phone; els.studentStatus.value=s.status; els.studentNotes.value=s.notes || ''; switchSection('students'); };
+
+function saveAttendance(e){ e.preventDefault(); if(!requirePermission('attendance_manage','You cannot manage attendance.')) return; const studentId = els.attendanceStudentId.value; if(!studentId) return showToast('Select a student.'); const key = `${studentId}_${els.attendanceDate.value}`; const existing = state.attendance.find(a => `${a.studentId}_${a.date}` === key); const record = { id: existing?.id || uid('ATT'), date:els.attendanceDate.value, studentId, status:els.attendanceStatus.value, remarks:els.attendanceRemarks.value.trim(), by:currentUsername() };
+  if(existing) Object.assign(existing, record); else state.attendance.push(record);
+  addAudit(existing?'Attendance updated':'Attendance recorded', `${studentName(studentId)} marked ${record.status} on ${record.date}.`); logActivity('Attendance', `${studentName(studentId)} marked ${record.status}.`); persist('Attendance saved.'); els.attendanceForm.reset(); setTodayDefaults(); renderAll(); }
+function renderAttendance(){ const q = els.attendanceSearch.value.trim().toLowerCase(); const rows = state.attendance.filter(a => [a.date,studentName(a.studentId),studentClass(a.studentId),a.status].join(' ').toLowerCase().includes(q)).sort((a,b)=> b.date.localeCompare(a.date)).map(a=>`<tr><td>${formatDate(a.date)}</td><td>${escapeHtml(studentName(a.studentId))}</td><td>${escapeHtml(studentClass(a.studentId))}</td><td><span class="badge ${attendanceBadge(a.status)}">${escapeHtml(a.status)}</span></td><td>${escapeHtml(a.by||'')}</td></tr>`).join('');
+  els.attendanceTableBody.innerHTML = rows || `<tr><td colspan="5" class="muted">No attendance records.</td></tr>`;
+  const month = new Date().toISOString().slice(0,7); const monthData = state.attendance.filter(a=>String(a.date).startsWith(month)); const present = monthData.filter(a=>a.status==='Present').length; const absent = monthData.filter(a=>a.status==='Absent').length; const late = monthData.filter(a=>a.status==='Late').length; els.attendanceSummaryText.textContent = `This month: ${present} present, ${absent} absent, ${late} late.`;
+}
+function attendanceBadge(s){ return s==='Present'?'success':s==='Late'?'warn':'danger'; }
+
+function saveBank(e){ e.preventDefault(); if(!requirePermission('finance_manage','You cannot manage banks.')) return; const id = els.bankId.value || uid('BNK'); const existing = state.banks.find(b=>b.id===id); const bank = { id, name:els.bankName.value.trim(), accountNo:els.bankAccountNo.value.trim(), branch:els.bankBranch.value.trim(), status:els.bankStatus.value };
+  if(existing) Object.assign(existing, bank); else state.banks.push(bank);
+  addAudit(existing?'Bank updated':'Bank created', `${bank.name} saved.`); logActivity('Bank saved', `${bank.name} is available for receipting.`); persist('Bank saved.'); els.bankForm.reset(); els.bankId.value=''; renderAll(); }
+window.editBank = function(id){ const b = state.banks.find(x=>x.id===id); if(!b) return; els.bankId.value=b.id; els.bankName.value=b.name; els.bankAccountNo.value=b.accountNo; els.bankBranch.value=b.branch; els.bankStatus.value=b.status; switchSection('finance'); };
+
+function saveInvoice(e){ e.preventDefault(); if(!requirePermission('finance_manage','You cannot manage invoices.')) return; const id = els.invoiceId.value || uid('INV'); const existing = state.invoices.find(x=>x.id===id); const inv = { id, number: existing?.number || autoNumber('INV', state.invoices.length+1), date:els.invoiceDate.value, studentId:els.invoiceStudentId.value, term:els.invoiceTerm.value.trim(), amount:Number(els.invoiceAmount.value), description:els.invoiceDescription.value.trim(), status: existing?.status || 'Draft', createdBy: existing?.createdBy || currentUsername() };
+  if(!inv.studentId) return showToast('Select a student.');
+  if(existing) Object.assign(existing, inv); else state.invoices.push(inv);
+  addAudit(existing?'Invoice updated':'Invoice created', `${inv.number} saved for ${studentName(inv.studentId)}.`); logActivity('Invoice saved', `${inv.number} prepared.`); persist('Invoice saved.'); els.invoiceForm.reset(); els.invoiceId.value=''; setTodayDefaults(); renderAll(); }
+window.postInvoice = function(id){ if(!requirePermission('finance_post','You cannot post invoices.')) return; const inv = state.invoices.find(x=>x.id===id); if(!inv || inv.status!=='Draft') return; inv.status='Posted'; inv.postedAt=new Date().toISOString(); inv.postedBy=currentUsername(); addAudit('Invoice posted', `${inv.number} posted. Dr Student Debtor ${money(inv.amount)} | Cr Fee Revenue ${money(inv.amount)}.`); logActivity('Invoice posted', `${inv.number} now affects student balance.`); persist('Invoice posted.'); renderAll(); };
+window.reverseInvoice = function(id){ if(!requirePermission('finance_reverse','You cannot reverse invoices.')) return; const inv = state.invoices.find(x=>x.id===id); if(!inv || inv.status!=='Posted') return; if(invoicePaidAmount(id)>0) return showToast('Reverse related receipts first.'); const reason = prompt('Invoice reversal reason'); if(!reason) return; inv.status='Reversed'; inv.reversalReason=reason; inv.reversedBy=currentUsername(); inv.reversedAt=new Date().toISOString(); addAudit('Invoice reversed', `${inv.number} reversed. ${reason}`); logActivity('Invoice reversed', `${inv.number} reversed.`); persist('Invoice reversed.'); renderAll(); };
+
+function savePayment(e){ e.preventDefault(); if(!requirePermission('finance_manage','You cannot manage receipts.')) return; const id = els.paymentId.value || uid('PAY'); const existing = state.payments.find(x=>x.id===id); const pay = { id, number: existing?.number || autoNumber('RCPT', state.payments.length+1), date:els.paymentDate.value, studentId:els.paymentStudentId.value, invoiceId:els.paymentInvoiceId.value, bankId:els.paymentBankId.value, amount:Number(els.paymentAmount.value), method:els.paymentMethod.value, status: existing?.status || 'Draft', createdBy: existing?.createdBy || currentUsername() };
+  if(!pay.studentId || !pay.invoiceId || !pay.bankId) return showToast('Complete receipt fields.');
+  if(existing) Object.assign(existing, pay); else state.payments.push(pay);
+  addAudit(existing?'Receipt updated':'Receipt created', `${pay.number} saved for ${studentName(pay.studentId)}.`); logActivity('Receipt saved', `${pay.number} prepared.`); persist('Receipt saved.'); els.paymentForm.reset(); els.paymentId.value=''; setTodayDefaults(); renderAll(); };
+window.postReceipt = function(id){ if(!requirePermission('finance_post','You cannot post receipts.')) return; const p = state.payments.find(x=>x.id===id); if(!p || p.status!=='Draft') return; const inv = state.invoices.find(x=>x.id===p.invoiceId); if(!inv || inv.status!=='Posted') return showToast('Invoice must be posted first.'); if(p.amount > invoiceBalance(inv.id)) return showToast('Receipt exceeds invoice balance.'); p.status='Posted'; p.postedAt=new Date().toISOString(); p.postedBy=currentUsername(); addAudit('Receipt posted', `${p.number} posted. Dr ${bankName(p.bankId)} ${money(p.amount)} | Cr Student ${money(p.amount)}.`); logActivity('Receipt posted', `${p.number} reduced outstanding balance.`); persist('Receipt posted.'); renderAll(); };
+window.reverseReceipt = function(id){ if(!requirePermission('finance_reverse','You cannot reverse receipts.')) return; const p = state.payments.find(x=>x.id===id); if(!p || p.status!=='Posted') return; const reason = prompt('Receipt reversal reason'); if(!reason) return; p.status='Reversed'; p.reversalReason=reason; p.reversedAt=new Date().toISOString(); p.reversedBy=currentUsername(); addAudit('Receipt reversed', `${p.number} reversed. ${reason}`); logActivity('Receipt reversed', `${p.number} reversed.`); persist('Receipt reversed.'); renderAll(); };
+
+function saveRefund(e){ e.preventDefault(); if(!requirePermission('finance_manage','You cannot manage refunds.')) return; const id = els.refundId.value || uid('REF'); const existing = state.refunds.find(x=>x.id===id); const r = { id, number: existing?.number || autoNumber('RFD', state.refunds.length+1), date:els.refundDate.value, studentId:els.refundStudentId.value, bankId:els.refundBankId.value, amount:Number(els.refundAmount.value), reason:els.refundReason.value.trim(), status: existing?.status || 'Draft', createdBy: existing?.createdBy || currentUsername() };
+  if(!r.studentId || !r.bankId) return showToast('Complete refund fields.');
+  if(existing) Object.assign(existing, r); else state.refunds.push(r);
+  addAudit(existing?'Refund updated':'Refund created', `${r.number} saved for ${studentName(r.studentId)}.`); logActivity('Refund saved', `${r.number} prepared.`); persist('Refund saved.'); els.refundForm.reset(); els.refundId.value=''; setTodayDefaults(); renderAll(); };
+window.approveRefund = function(id){ if(!requirePermission('finance_post','You cannot approve refunds.')) return; const r = state.refunds.find(x=>x.id===id); if(!r || r.status!=='Draft') return; r.status='Approved'; r.approvedBy=currentUsername(); r.approvedAt=new Date().toISOString(); addAudit('Refund approved', `${r.number} approved for ${money(r.amount)}.`); logActivity('Refund approved', `${r.number} awaiting payment.`); persist('Refund approved.'); renderAll(); };
+window.payRefund = function(id){ if(!requirePermission('finance_post','You cannot pay refunds.')) return; const r = state.refunds.find(x=>x.id===id); if(!r || r.status!=='Approved') return; if(r.amount > studentCredit(r.studentId)) return showToast('Refund exceeds current student credit.'); if(r.amount > bankBalance(r.bankId)) return showToast('Bank balance too low.'); r.status='Paid'; r.paidBy=currentUsername(); r.paidAt=new Date().toISOString(); addAudit('Refund paid', `${r.number} paid. Dr Student/Refund Control ${money(r.amount)} | Cr ${bankName(r.bankId)} ${money(r.amount)}.`); logActivity('Refund paid', `${r.number} paid out.`); persist('Refund paid.'); renderAll(); };
+window.reverseRefund = function(id){ if(!requirePermission('finance_reverse','You cannot reverse refunds.')) return; const r = state.refunds.find(x=>x.id===id); if(!r || r.status!=='Paid') return; const reason = prompt('Refund reversal reason'); if(!reason) return; r.status='Reversed'; r.reversalReason=reason; r.reversedAt=new Date().toISOString(); r.reversedBy=currentUsername(); addAudit('Refund reversed', `${r.number} reversed. ${reason}`); logActivity('Refund reversed', `${r.number} reversed.`); persist('Refund reversed.'); renderAll(); };
+
+function renderFinance(){
+  els.bankCount.textContent = state.banks.length;
+  els.draftInvoiceCount.textContent = state.invoices.filter(x=>x.status==='Draft').length;
+  els.postedReceiptCount.textContent = state.payments.filter(x=>x.status==='Posted').length;
+  els.paidRefundCount.textContent = state.refunds.filter(x=>x.status==='Paid').length;
+  els.banksTableBody.innerHTML = state.banks.map(b=>`<tr><td>${escapeHtml(b.name)}</td><td>${escapeHtml(b.accountNo||'')}</td><td>${escapeHtml(b.branch||'')}</td><td>${money(bankBalance(b.id))}</td><td><button class="table-btn" onclick="editBank('${b.id}')">Edit</button></td></tr>`).join('') || `<tr><td colspan="5" class="muted">No banks yet.</td></tr>`;
+  els.invoicesTableBody.innerHTML = state.invoices.slice().reverse().map(i=>`<tr><td>${escapeHtml(i.number)}</td><td>${formatDate(i.date)}</td><td>${escapeHtml(studentName(i.studentId))}</td><td>${money(i.amount)}</td><td>${statusBadge(i.status)}</td><td>${invoiceActions(i)}</td></tr>`).join('') || `<tr><td colspan="6" class="muted">No invoices yet.</td></tr>`;
+  els.paymentsTableBody.innerHTML = state.payments.slice().reverse().map(p=>`<tr><td>${escapeHtml(p.number)}</td><td>${formatDate(p.date)}</td><td>${escapeHtml(studentName(p.studentId))}</td><td>${money(p.amount)}</td><td>${statusBadge(p.status)}</td><td>${paymentActions(p)}</td></tr>`).join('') || `<tr><td colspan="6" class="muted">No receipts yet.</td></tr>`;
+  els.refundsTableBody.innerHTML = state.refunds.slice().reverse().map(r=>`<tr><td>${escapeHtml(r.number)}</td><td>${formatDate(r.date)}</td><td>${escapeHtml(studentName(r.studentId))}</td><td>${money(r.amount)}</td><td>${statusBadge(r.status)}</td><td>${refundActions(r)}</td></tr>`).join('') || `<tr><td colspan="6" class="muted">No refunds yet.</td></tr>`;
+}
+function invoiceActions(i){ let out=''; if(i.status==='Draft') out += `<button class="table-btn primary-lite" onclick="postInvoice('${i.id}')">Post</button>`; if(i.status==='Posted') out += ` <button class="table-btn danger-lite" onclick="reverseInvoice('${i.id}')">Reverse</button>`; return out || '-'; }
+function paymentActions(p){ let out=''; if(p.status==='Draft') out += `<button class="table-btn primary-lite" onclick="postReceipt('${p.id}')">Post</button>`; if(p.status==='Posted') out += ` <button class="table-btn danger-lite" onclick="reverseReceipt('${p.id}')">Reverse</button>`; return out || '-'; }
+function refundActions(r){ let out=''; if(r.status==='Draft') out += `<button class="table-btn warn-lite" onclick="approveRefund('${r.id}')">Approve</button>`; if(r.status==='Approved') out += ` <button class="table-btn primary-lite" onclick="payRefund('${r.id}')">Pay</button>`; if(r.status==='Paid') out += ` <button class="table-btn danger-lite" onclick="reverseRefund('${r.id}')">Reverse</button>`; return out || '-'; }
+function statusBadge(status){ const cls = status==='Posted' || status==='Paid' || status==='Active' || status==='Approved' ? 'success' : status==='Draft' ? 'warn' : status==='Reversed' || status==='Inactive' ? 'danger' : 'info'; return `<span class="badge ${cls}">${escapeHtml(status)}</span>`; }
+function populateInvoiceOptions(){
+  const sid = els.paymentStudentId.value; const options = `<option value="">Select invoice</option>` + state.invoices.filter(i => i.studentId===sid && i.status==='Posted' && invoiceBalance(i.id) > 0).map(i=>`<option value="${i.id}">${escapeHtml(i.number)} - ${money(invoiceBalance(i.id))}</option>`).join('');
+  els.paymentInvoiceId.innerHTML = options;
 }
 
-function resetStudentForm() { els.studentForm.reset(); els.studentId.value = ''; els.studentStatus.value = 'Active'; }
+function saveExam(e){ e.preventDefault(); if(!requirePermission('exams_manage','You cannot manage exams.')) return; const id = els.examId.value || uid('EXM'); const existing = state.exams.find(x=>x.id===id); const marks = Number(els.examMarks.value); const outOf = Number(els.examOutOf.value); const percentage = outOf ? (marks / outOf) * 100 : 0; const exam = { id, date:els.examDate.value, studentId:els.examStudentId.value, subject:els.examSubject.value.trim(), assessment:els.examAssessment.value, marks, outOf, grade:gradeFromPercent(percentage), percentage };
+  if(!exam.studentId) return showToast('Select a student.');
+  if(existing) Object.assign(existing, exam); else state.exams.push(exam);
+  addAudit(existing?'Result updated':'Result saved', `${studentName(exam.studentId)} ${exam.subject} ${exam.grade}.`); logActivity('Exam result', `${studentName(exam.studentId)} scored ${exam.grade} in ${exam.subject}.`); persist('Marks saved.'); els.examForm.reset(); els.examId.value=''; setTodayDefaults(); renderAll(); }
+function renderExams(){ const q = els.examSearch.value.trim().toLowerCase(); const rows = state.exams.filter(x => [x.subject,x.assessment,studentName(x.studentId)].join(' ').toLowerCase().includes(q)).sort((a,b)=> (b.date||'').localeCompare(a.date||'')).map(x=>`<tr><td>${formatDate(x.date)}</td><td>${escapeHtml(studentName(x.studentId))}</td><td>${escapeHtml(x.subject)}</td><td>${escapeHtml(x.assessment)}</td><td>${x.marks}/${x.outOf}</td><td><span class="badge info">${x.grade}</span></td></tr>`).join(''); els.examsTableBody.innerHTML = rows || `<tr><td colspan="6" class="muted">No marks yet.</td></tr>`; }
+function gradeFromPercent(p){ return p >= 80 ? 'A' : p >= 70 ? 'B' : p >= 60 ? 'C' : p >= 50 ? 'D' : 'E'; }
 
-function editStudent(id) {
-  const s = state.students.find(x => x.id === id); if (!s) return;
-  els.studentId.value = s.id; els.admissionNo.value = s.admissionNo; els.studentName.value = s.fullName; els.studentClass.value = s.className; els.parentContact.value = s.parentContact; els.studentGender.value = s.gender; els.studentStatus.value = s.status; els.parentName.value = s.parentName; els.studentNotes.value = s.notes || '';
-  switchSection('students');
-}
+function saveStaff(e){ e.preventDefault(); if(!requirePermission('staff_manage','You cannot manage staff.')) return; const id = els.staffId.value || uid('STF'); const existing = state.staff.find(x=>x.id===id); const item = { id, staffNo:els.staffNo.value.trim(), name:els.staffName.value.trim(), role:els.staffRole.value.trim(), department:els.staffDepartment.value.trim(), phone:els.staffPhone.value.trim(), status:els.staffStatus.value };
+  if(existing) Object.assign(existing, item); else state.staff.push(item);
+  addAudit(existing?'Staff updated':'Staff created', `${item.name} saved.`); logActivity('Staff saved', `${item.name} added to staff records.`); persist('Staff saved.'); els.staffForm.reset(); els.staffId.value=''; renderAll(); }
+function renderStaff(){ const q = els.staffSearch.value.trim().toLowerCase(); const rows = state.staff.filter(s => [s.staffNo,s.name,s.role,s.department].join(' ').toLowerCase().includes(q)).map(s=>`<tr><td>${escapeHtml(s.staffNo)}</td><td>${escapeHtml(s.name)}</td><td>${escapeHtml(s.role)}</td><td>${escapeHtml(s.department||'')}</td><td>${statusBadge(s.status)}</td><td><button class="table-btn" onclick="editStaff('${s.id}')">Edit</button></td></tr>`).join(''); els.staffTableBody.innerHTML = rows || `<tr><td colspan="6" class="muted">No staff records.</td></tr>`; }
+window.editStaff = function(id){ const s = state.staff.find(x=>x.id===id); if(!s) return; els.staffId.value=s.id; els.staffNo.value=s.staffNo; els.staffName.value=s.name; els.staffRole.value=s.role; els.staffDepartment.value=s.department; els.staffPhone.value=s.phone; els.staffStatus.value=s.status; switchSection('staff'); };
 
-function promoteClass() {
-  const currentClass = prompt('Enter current class to promote, e.g. Grade 7');
-  if (!currentClass) return;
-  const nextClass = prompt('Enter next class, e.g. Grade 8');
-  if (!nextClass) return;
-  let count = 0;
-  state.students.forEach(s => { if (s.className.toLowerCase() === currentClass.toLowerCase() && s.status === 'Active') { s.className = nextClass; count++; } });
-  persist(`Promoted ${count} students from ${currentClass} to ${nextClass}`);
-  renderAll();
-}
+function saveAnnouncement(e){ e.preventDefault(); if(!requirePermission('communication_manage','You cannot manage communication.')) return; state.communications.unshift({ id:uid('COM'), type:'Announcement', audience:els.announcementAudience.value, title:els.announcementTitle.value.trim(), message:els.announcementMessage.value.trim(), by:currentUsername(), at:new Date().toISOString() }); addAudit('Announcement saved', `${els.announcementTitle.value.trim()} published.`); logActivity('Announcement', `${els.announcementTitle.value.trim()} saved.`); persist('Announcement saved.'); els.announcementForm.reset(); renderAll(); }
+function saveSms(e){ e.preventDefault(); if(!requirePermission('communication_manage','You cannot manage SMS.')) return; const target = els.smsStudentId.value === 'ALL' ? 'All students' : studentName(els.smsStudentId.value); state.communications.unshift({ id:uid('SMS'), type:'SMS', audience:target, title:els.smsType.value, message:els.smsMessage.value.trim(), by:currentUsername(), at:new Date().toISOString() }); addAudit('SMS alert logged', `${els.smsType.value} prepared for ${target}.`); logActivity('SMS log', `${els.smsType.value} sent to ${target}.`); persist('SMS alert logged.'); els.smsForm.reset(); renderAll(); }
+function renderCommunication(){ const items = state.communications.slice(0,20).map(c=>`<div class="list-item"><div><strong>${escapeHtml(c.type)} · ${escapeHtml(c.title)}</strong><small>${escapeHtml(c.audience)} · ${formatDateTime(c.at)} · by ${escapeHtml(c.by)}</small></div><div class="muted">${escapeHtml(c.message)}</div></div>`).join(''); els.communicationLog.innerHTML = items || 'No communication yet.'; }
 
-function renderStudents() {
-  const q = els.studentSearch.value.trim().toLowerCase();
-  const rows = state.students.filter(s => [s.admissionNo,s.fullName,s.className,s.parentContact,s.status].join(' ').toLowerCase().includes(q)).sort((a,b)=>a.fullName.localeCompare(b.fullName));
-  els.studentsTableBody.innerHTML = rows.length ? rows.map(s => `
-    <tr>
-      <td>${escapeHtml(s.admissionNo)}</td>
-      <td>${escapeHtml(s.fullName)}</td>
-      <td>${escapeHtml(s.className)}</td>
-      <td>${escapeHtml(s.parentContact || '-')}</td>
-      <td>${statusTag(s.status)}</td>
-      <td><div class="action-row"><button onclick="editStudent('${s.id}')">Edit</button></div></td>
-    </tr>`).join('') : `<tr><td colspan="6" class="muted">No students found.</td></tr>`;
-}
+function saveUser(e){ e.preventDefault(); if(!requirePermission('users_manage','Only administrator can manage users.')) return; const role = els.userRole.value; const id = els.userId.value || uid('USR'); const existing = state.auth.users.find(x=>x.id===id); const privileges = role === 'Administrator' ? ['*'] : Array.from(document.querySelectorAll('.privilege-check:checked')).map(x=>x.value);
+  const user = { id, fullName:els.userFullName.value.trim(), username:els.userUsername.value.trim(), password:els.userPassword.value, role, active:els.userStatus.value==='Active', approvalLimit:Number(els.approvalLimit.value||0), privileges };
+  if(existing) Object.assign(existing, user); else state.auth.users.push(user);
+  addAudit(existing?'User updated':'User created', `${user.fullName} (${user.role}) saved.`); logActivity('User saved', `${user.username} account updated.`); persist('User saved.'); els.userForm.reset(); els.userId.value=''; renderPrivilegeMatrix(); renderAll(); }
+function onRoleChange(){ const role = els.userRole.value; renderPrivilegeMatrix(role === 'Custom' ? [] : (ROLE_PRESETS[role] || [])); }
+function renderPrivilegeMatrix(selected=[]){ if(els.userRole.value === 'Administrator'){ els.userPrivilegesGrid.innerHTML = `<div class="permission-note">Administrator has full system rights.</div>`; return; } els.userPrivilegesGrid.innerHTML = PRIVILEGES.map(p=>`<label class="privilege-item"><input class="privilege-check" type="checkbox" value="${p.key}" ${selected.includes(p.key)?'checked':''}><div><strong>${p.label}</strong><span>${p.description}</span></div></label>`).join(''); }
+function renderUsers(){ const q = els.userSearch.value.trim().toLowerCase(); const rows = state.auth.users.filter(u => [u.fullName,u.username,u.role].join(' ').toLowerCase().includes(q)).map(u=>`<tr><td>${escapeHtml(u.fullName)}</td><td>${escapeHtml(u.username)}</td><td>${escapeHtml(u.role)}</td><td>${statusBadge(u.active!==false?'Active':'Inactive')}</td><td>${money(u.approvalLimit||0)}</td><td><button class="table-btn" onclick="editUser('${u.id}')">Edit</button> <button class="table-btn danger-lite" onclick="toggleUserStatus('${u.id}')">${u.active!==false?'Deactivate':'Activate'}</button></td></tr>`).join(''); els.usersTableBody.innerHTML = rows || `<tr><td colspan="6" class="muted">No users.</td></tr>`; }
+window.editUser = function(id){ if(!requirePermission('users_manage','Only administrator can manage users.')) return; const u = state.auth.users.find(x=>x.id===id); if(!u) return; els.userId.value=u.id; els.userFullName.value=u.fullName; els.userUsername.value=u.username; els.userPassword.value=u.password; els.userRole.value=u.role; els.userStatus.value=u.active!==false?'Active':'Inactive'; els.approvalLimit.value=u.approvalLimit||0; renderPrivilegeMatrix(u.role==='Administrator'?['*']:(u.privileges||[])); Array.from(document.querySelectorAll('.privilege-check')).forEach(chk=> chk.checked = (u.privileges||[]).includes(chk.value)); switchSection('users'); };
+window.toggleUserStatus = function(id){ if(!requirePermission('users_manage','Only administrator can manage users.')) return; const u = state.auth.users.find(x=>x.id===id); if(!u) return; u.active = !(u.active!==false); addAudit('User status changed', `${u.username} is now ${u.active?'Active':'Inactive'}.`); if(currentUser()?.id===id && !u.active) { state.auth.currentUser = null; } persist('User status updated.'); syncAuthUI(); renderAll(); };
 
-function syncAttendanceStudentFilter() {
-  const classVal = els.attendanceClass.value.trim().toLowerCase();
-  const filtered = state.students.filter(s => !classVal || s.className.toLowerCase().includes(classVal));
-  els.attendanceStudent.innerHTML = ['<option value="">Select student</option>'].concat(filtered.map(s => `<option value="${s.id}">${escapeHtml(s.fullName)} (${escapeHtml(s.className)})</option>`)).join('');
-}
+function saveSettings(e){ e.preventDefault(); if(!requirePermission('settings_manage','You cannot change settings.')) return; state.settings.schoolName=els.schoolName.value.trim(); state.settings.currentTerm=els.currentTerm.value.trim(); state.settings.schoolPhone=els.schoolPhone.value.trim(); state.settings.schoolEmail=els.schoolEmail.value.trim(); state.settings.schoolAddress=els.schoolAddress.value.trim(); state.settings.currency=els.currency.value.trim() || 'KES'; state.settings.footerNote=els.footerNote.value.trim(); addAudit('Settings updated', 'Institution settings updated.'); persist('Settings saved.'); syncAuthUI(); renderAll(); }
+function fillSettingsForm(){ els.schoolName.value=state.settings.schoolName; els.currentTerm.value=state.settings.currentTerm; els.schoolPhone.value=state.settings.schoolPhone; els.schoolEmail.value=state.settings.schoolEmail; els.schoolAddress.value=state.settings.schoolAddress; els.currency.value=state.settings.currency; els.footerNote.value=state.settings.footerNote; }
 
-function saveAttendance(e) {
-  e.preventDefault();
-  const student = byId(state.students, els.attendanceStudent.value);
-  if (!student) return alert('Select student.');
-  const payload = { id: uid('ATT'), date: els.attendanceDate.value, className: els.attendanceClass.value.trim(), studentId: student.id, studentName: student.fullName, status: els.attendanceStatus.value, remarks: els.attendanceRemarks.value.trim() };
-  state.attendance.push(payload);
-  persist(`Marked ${payload.status.toLowerCase()} attendance for ${student.fullName}`);
-  els.attendanceForm.reset();
-  setDefaultDates();
-  renderAttendance();
-  renderDashboard();
-}
+function renderDashboard(){
+  els.statStudents.textContent = state.students.filter(s=>s.status==='Active').length;
+  els.statStaff.textContent = state.staff.filter(s=>s.status==='Active').length;
+  els.statInvoiced.textContent = money(totalPostedInvoices());
+  els.statCollected.textContent = money(totalPostedReceipts());
+  els.statOutstanding.textContent = money(totalOutstanding());
+  const today = new Date().toISOString().slice(0,10); els.statAttendanceToday.textContent = state.attendance.filter(a=>a.date===today).length;
 
-function renderAttendance() {
-  const q = els.attendanceSearch.value.trim().toLowerCase();
-  const rows = state.attendance.filter(a => [a.date,a.className,a.studentName,a.status,a.remarks].join(' ').toLowerCase().includes(q)).sort((a,b)=>(b.date+a.studentName).localeCompare(a.date+b.studentName));
-  els.attendanceTableBody.innerHTML = rows.length ? rows.map(a => `<tr><td>${a.date}</td><td>${escapeHtml(a.studentName)}</td><td>${escapeHtml(a.className)}</td><td>${statusTag(a.status)}</td><td>${escapeHtml(a.remarks || '-')}</td></tr>`).join('') : `<tr><td colspan="5" class="muted">No attendance records found.</td></tr>`;
-  const total = state.attendance.length;
-  const present = state.attendance.filter(a => a.status === 'Present').length;
-  const absent = state.attendance.filter(a => a.status === 'Absent').length;
-  const late = state.attendance.filter(a => a.status === 'Late').length;
-  els.attendanceSummary.innerHTML = summaryCard('Total Entries', total) + summaryCard('Present', present) + summaryCard('Absent', absent) + summaryCard('Late', late);
-}
-
-function saveBank(e) {
-  e.preventDefault();
-  const payload = { id: els.bankId.value || uid('BNK'), name: els.bankName.value.trim(), accountNo: els.bankAccount.value.trim(), openingBalance: num(els.bankOpeningBalance.value) };
-  upsert(state.banks, payload);
-  persist(`Saved bank ${payload.name}`);
-  els.bankForm.reset();
-  els.bankOpeningBalance.value = 0;
-  populateSelectors();
-  renderFinance();
-}
-
-function saveInvoice(e) {
-  e.preventDefault();
-  const student = byId(state.students, els.invoiceStudent.value);
-  if (!student) return alert('Select student.');
-  state.invoices.push({ id: uid('INV'), studentId: student.id, studentName: student.fullName, invoiceNo: els.invoiceNumber.value.trim(), description: els.invoiceDescription.value.trim(), amount: num(els.invoiceAmount.value), dueDate: els.invoiceDueDate.value, status: 'Draft', createdAt: todayIso() });
-  persist(`Created draft invoice ${els.invoiceNumber.value.trim()}`);
-  els.invoiceForm.reset(); setDefaultDates();
-  renderFinance();
-}
-
-function savePayment(e) {
-  e.preventDefault();
-  const student = byId(state.students, els.paymentStudent.value);
-  const bank = byId(state.banks, els.paymentBank.value);
-  if (!student || !bank) return alert('Select student and bank.');
-  state.payments.push({ id: uid('RCP'), studentId: student.id, studentName: student.fullName, bankId: bank.id, bankName: bank.name, receiptNo: els.receiptNumber.value.trim(), amount: num(els.paymentAmount.value), date: els.paymentDate.value, reference: els.paymentReference.value.trim(), status: 'Draft' });
-  persist(`Created draft receipt ${els.receiptNumber.value.trim()}`);
-  els.paymentForm.reset(); setDefaultDates();
-  renderFinance();
-}
-
-function saveRefund(e) {
-  e.preventDefault();
-  const student = byId(state.students, els.refundStudent.value);
-  const bank = byId(state.banks, els.refundBank.value);
-  if (!student || !bank) return alert('Select student and bank.');
-  state.refunds.push({ id: uid('RFD'), studentId: student.id, studentName: student.fullName, bankId: bank.id, bankName: bank.name, refundNo: els.refundNumber.value.trim(), amount: num(els.refundAmount.value), date: els.refundDate.value, reason: els.refundReason.value.trim(), status: 'Draft' });
-  persist(`Created draft refund ${els.refundNumber.value.trim()}`);
-  els.refundForm.reset(); setDefaultDates();
-  renderFinance();
-}
-
-function renderFinance() {
-  const q = els.financeSearch.value.trim().toLowerCase();
-  const rows = [
-    ...state.invoices.map(i => ({ type: 'Invoice', id: i.id, ref: i.invoiceNo, studentName: i.studentName, amount: i.amount, status: i.status, date: i.createdAt || i.dueDate, object: i })),
-    ...state.payments.map(p => ({ type: 'Receipt', id: p.id, ref: p.receiptNo, studentName: p.studentName, amount: p.amount, status: p.status, date: p.date, object: p })),
-    ...state.refunds.map(r => ({ type: 'Refund', id: r.id, ref: r.refundNo, studentName: r.studentName, amount: r.amount, status: r.status, date: r.date, object: r }))
-  ].filter(r => [r.type, r.ref, r.studentName, r.status, r.amount].join(' ').toLowerCase().includes(q)).sort((a,b)=> String(b.date).localeCompare(String(a.date)));
-  els.financeTableBody.innerHTML = rows.length ? rows.map(r => `<tr>
-    <td>${statusTag(r.type)}</td><td>${escapeHtml(r.ref)}</td><td>${escapeHtml(r.studentName)}</td><td>${money(r.amount)}</td><td>${statusTag(r.status)}</td>
-    <td><div class="action-row">${financeActions(r)}</div></td>
-  </tr>`).join('') : `<tr><td colspan="6" class="muted">No finance records found.</td></tr>`;
-}
-
-function financeActions(row) {
-  if (row.status === 'Draft') return `<button onclick="postFinance('${row.type}','${row.id}')">Post</button>`;
-  if (row.status === 'Approved') return `<button onclick="postFinance('${row.type}','${row.id}')">Pay / Post</button>`;
-  if (row.status === 'Posted' && row.type !== 'Refund') return `<button onclick="reverseFinance('${row.type}','${row.id}')">Reverse</button>`;
-  if (row.status === 'Posted' && row.type === 'Refund') return `<button onclick="reverseFinance('${row.type}','${row.id}')">Reverse</button>`;
-  if (row.status === 'Draft' && row.type === 'Refund') return `<button onclick="approveRefund('${row.id}')">Approve</button>`;
-  return '-';
-}
-
-function postFinance(type, id) {
-  let rec;
-  if (type === 'Invoice') { rec = byId(state.invoices, id); if (!rec) return; rec.status = 'Posted'; persist(`Posted invoice ${rec.invoiceNo} (Dr Student Debtor, Cr Fee Revenue)`); }
-  if (type === 'Receipt') { rec = byId(state.payments, id); if (!rec) return; rec.status = 'Posted'; persist(`Posted receipt ${rec.receiptNo} (Dr Bank, Cr Student)`); }
-  if (type === 'Refund') { rec = byId(state.refunds, id); if (!rec) return; rec.status = 'Posted'; persist(`Paid refund ${rec.refundNo} (Cr Bank)`); }
-  renderAll();
-}
-
-function approveRefund(id) {
-  const rec = byId(state.refunds, id); if (!rec) return;
-  rec.status = 'Approved';
-  persist(`Approved refund ${rec.refundNo}`);
-  renderFinance();
-}
-
-function reverseFinance(type, id) {
-  const reason = prompt(`Enter reason to reverse this ${type.toLowerCase()}`);
-  if (!reason) return;
-  const list = type === 'Invoice' ? state.invoices : type === 'Receipt' ? state.payments : state.refunds;
-  const rec = byId(list, id); if (!rec) return;
-  rec.status = 'Reversed'; rec.reverseReason = reason; rec.reversedAt = todayIso();
-  persist(`Reversed ${type.toLowerCase()} ${rec.invoiceNo || rec.receiptNo || rec.refundNo}: ${reason}`);
-  renderAll();
-}
-
-function buildLedger(studentId, asAt = todayIso()) {
-  const items = [];
-  state.invoices.filter(i => i.studentId === studentId && i.status === 'Posted' && i.dueDate <= asAt).forEach(i => items.push({ date: i.dueDate, type: 'Invoice', ref: i.invoiceNo, debit: i.amount, credit: 0 }));
-  state.payments.filter(p => p.studentId === studentId && p.status === 'Posted' && p.date <= asAt).forEach(p => items.push({ date: p.date, type: 'Receipt', ref: p.receiptNo, debit: 0, credit: p.amount }));
-  state.refunds.filter(r => r.studentId === studentId && r.status === 'Posted' && r.date <= asAt).forEach(r => items.push({ date: r.date, type: 'Refund', ref: r.refundNo, debit: r.amount, credit: 0 }));
-  items.sort((a,b) => a.date.localeCompare(b.date) || a.type.localeCompare(b.type));
-  let balance = 0;
-  return items.map(item => { balance += item.debit - item.credit; return { ...item, balance }; });
-}
-
-function renderLedger(e) {
-  if (e) e.preventDefault();
-  const studentId = els.ledgerStudent.value || state.students[0]?.id;
-  const asAt = els.ledgerDate.value || todayIso();
-  if (!studentId) {
-    els.ledgerSummary.innerHTML = summaryCard('Status', 'No student');
-    els.ledgerTableBody.innerHTML = `<tr><td colspan="6" class="muted">No ledger data.</td></tr>`;
-    return;
-  }
-  els.ledgerStudent.value = studentId;
-  const ledger = buildLedger(studentId, asAt);
-  els.ledgerTableBody.innerHTML = ledger.length ? ledger.map(l => `<tr><td>${l.date}</td><td>${l.type}</td><td>${escapeHtml(l.ref)}</td><td>${money(l.debit)}</td><td>${money(l.credit)}</td><td>${money(l.balance)}</td></tr>`).join('') : `<tr><td colspan="6" class="muted">No ledger entries.</td></tr>`;
-  const closing = ledger.at(-1)?.balance || 0;
-  const student = byId(state.students, studentId);
-  els.ledgerSummary.innerHTML = summaryCard('Student', escapeHtml(student?.fullName || '')) + summaryCard('Closing Balance', money(closing)) + summaryCard('Clearance', closing <= 0 ? 'Cleared' : 'Not Cleared');
-}
-
-function saveExam(e) {
-  e.preventDefault();
-  const student = byId(state.students, els.examStudent.value);
-  if (!student) return alert('Select student.');
-  const cat = num(els.catMark.value), exam = num(els.examMark.value), total = cat + exam, grade = gradeFor(total);
-  state.exams.push({ id: uid('EXM'), studentId: student.id, studentName: student.fullName, className: els.examClass.value.trim(), term: els.examTerm.value.trim(), subject: els.examSubject.value.trim(), catMark: cat, examMark: exam, total, grade, date: todayIso() });
-  persist(`Saved result for ${student.fullName} in ${els.examSubject.value.trim()}`);
-  els.examForm.reset();
-  renderExams();
-  renderReports();
-}
-
-function renderExams() {
-  const q = els.examSearch.value.trim().toLowerCase();
-  const rows = state.exams.filter(r => [r.studentName,r.className,r.term,r.subject,r.grade,r.total].join(' ').toLowerCase().includes(q)).sort((a,b)=>b.total-a.total);
-  els.examTableBody.innerHTML = rows.length ? rows.map(r => `<tr><td>${escapeHtml(r.studentName)}</td><td>${escapeHtml(r.subject)}</td><td>${r.catMark}</td><td>${r.examMark}</td><td>${r.total}</td><td>${statusTag(r.grade)}</td></tr>`).join('') : `<tr><td colspan="6" class="muted">No results found.</td></tr>`;
-  const avg = rows.length ? (rows.reduce((sum,r)=>sum+r.total,0) / rows.length).toFixed(1) : '0.0';
-  els.examSummary.innerHTML = summaryCard('Entries', state.exams.length) + summaryCard('Average Score', avg) + summaryCard('Top Grade', rows[0]?.grade || '-');
-}
-
-function saveStaff(e) {
-  e.preventDefault();
-  const payload = { id: els.staffId.value || uid('STF'), staffNo: els.staffNo.value.trim(), fullName: els.staffName.value.trim(), role: els.staffRole.value.trim(), department: els.staffDepartment.value.trim(), phone: els.staffPhone.value.trim(), status: els.staffStatus.value };
-  upsert(state.staff, payload);
-  persist(`Saved staff ${payload.fullName}`);
-  els.staffForm.reset();
-  renderStaff();
-  renderDashboard();
-}
-
-function renderStaff() {
-  const q = els.staffSearch.value.trim().toLowerCase();
-  const rows = state.staff.filter(s => [s.staffNo,s.fullName,s.role,s.department,s.status].join(' ').toLowerCase().includes(q)).sort((a,b)=>a.fullName.localeCompare(b.fullName));
-  els.staffTableBody.innerHTML = rows.length ? rows.map(s => `<tr><td>${escapeHtml(s.staffNo)}</td><td>${escapeHtml(s.fullName)}</td><td>${escapeHtml(s.role)}</td><td>${escapeHtml(s.department || '-')}</td><td>${statusTag(s.status)}</td><td><div class="action-row"><button onclick="editStaff('${s.id}')">Edit</button></div></td></tr>`).join('') : `<tr><td colspan="6" class="muted">No staff found.</td></tr>`;
-}
-
-function editStaff(id) {
-  const s = byId(state.staff, id); if (!s) return;
-  els.staffId.value = s.id; els.staffNo.value = s.staffNo; els.staffName.value = s.fullName; els.staffRole.value = s.role; els.staffDepartment.value = s.department; els.staffPhone.value = s.phone; els.staffStatus.value = s.status;
-  switchSection('staff');
-}
-
-function saveMessage(e) {
-  e.preventDefault();
-  state.messages.push({ id: uid('MSG'), date: todayIso(), type: els.messageType.value, audience: els.messageAudience.value, body: els.messageBody.value.trim(), createdBy: state.auth.currentUser?.fullName || 'System' });
-  persist(`Saved ${els.messageType.value.toLowerCase()} message`);
-  els.messageForm.reset();
-  renderMessages();
-}
-
-function renderMessages() {
-  const q = els.messageSearch.value.trim().toLowerCase();
-  const rows = state.messages.filter(m => [m.date,m.type,m.audience,m.body,m.createdBy].join(' ').toLowerCase().includes(q)).sort((a,b)=>b.date.localeCompare(a.date));
-  els.messageTableBody.innerHTML = rows.length ? rows.map(m => `<tr><td>${m.date}</td><td>${escapeHtml(m.type)}</td><td>${escapeHtml(m.audience)}</td><td>${escapeHtml(m.body)}</td></tr>`).join('') : `<tr><td colspan="4" class="muted">No messages found.</td></tr>`;
-}
-
-function renderReports() {
-  const postedInvoices = sum(state.invoices.filter(i=>i.status==='Posted').map(i=>i.amount));
-  const postedReceipts = sum(state.payments.filter(p=>p.status==='Posted').map(p=>p.amount));
-  const postedRefunds = sum(state.refunds.filter(r=>r.status==='Posted').map(r=>r.amount));
-  const outstanding = postedInvoices + postedRefunds - postedReceipts;
-  const avgAttendance = state.attendance.length ? (state.attendance.filter(a=>a.status==='Present').length / state.attendance.length * 100).toFixed(1) + '%' : '0%';
-  const avgPerformance = state.exams.length ? (sum(state.exams.map(e=>e.total)) / state.exams.length).toFixed(1) : '0.0';
-  els.reportsHighlights.innerHTML = [
-    summaryCard('Fee Balance Report', money(outstanding)),
-    summaryCard('Attendance Summary', avgAttendance),
-    summaryCard('Class Performance', `${avgPerformance} average`),
-    summaryCard('Refunds Paid', money(postedRefunds))
-  ].join('');
-  els.auditTrail.innerHTML = state.activities.length ? state.activities.map(a => `<div class="list-item"><strong>${escapeHtml(a.text)}</strong><div class="muted small">${new Date(a.at).toLocaleString()} • ${escapeHtml(a.by)}</div></div>`).join('') : 'No audit entries yet.';
-}
-
-function renderDashboard() {
-  const students = state.students.filter(s=>s.status==='Active').length;
-  const staff = state.staff.filter(s=>s.status==='Active').length;
-  const today = todayIso();
-  const todaysAttendance = state.attendance.filter(a => a.date === today);
-  const attendanceRate = todaysAttendance.length ? ((todaysAttendance.filter(a=>a.status==='Present').length / todaysAttendance.length) * 100).toFixed(1) + '%' : '0%';
-  const invoiced = sum(state.invoices.filter(i=>i.status==='Posted').map(i=>i.amount));
-  const collected = sum(state.payments.filter(p=>p.status==='Posted').map(p=>p.amount));
-  const refunds = sum(state.refunds.filter(r=>r.status==='Posted').map(r=>r.amount));
-  const outstanding = invoiced + refunds - collected;
-  els.statStudents.textContent = students;
-  els.statStaff.textContent = staff;
-  els.statAttendance.textContent = attendanceRate;
-  els.statInvoiced.textContent = money(invoiced);
-  els.statCollected.textContent = money(collected);
-  els.statOutstanding.textContent = money(outstanding);
-
-  const cleared = state.students.filter(s => getStudentBalance(s.id) <= 0).length;
-  els.dashboardHighlights.innerHTML = [
-    summaryCard('Cleared Students', cleared),
-    summaryCard('Uncleared Students', Math.max(state.students.length - cleared, 0)),
-    summaryCard('Messages Logged', state.messages.length),
-    summaryCard('Results Entered', state.exams.length),
-    summaryCard('Banks Set Up', state.banks.length),
-    summaryCard('Approval Users', state.auth.users.filter(u => Number(u.approvalLimit) > 0).length)
-  ].join('');
-
-  els.recentActivity.innerHTML = state.activities.length ? state.activities.slice(0,8).map(a => `<div class="list-item"><strong>${escapeHtml(a.text)}</strong><div class="muted small">${new Date(a.at).toLocaleString()}</div></div>`).join('') : 'No activity yet.';
-  const topOutstanding = [...state.students].map(s => ({ name: s.fullName, balance: getStudentBalance(s.id) })).filter(x => x.balance > 0).sort((a,b)=>b.balance-a.balance).slice(0,6);
-  els.outstandingStudents.innerHTML = topOutstanding.length ? topOutstanding.map(o => `<div class="list-item"><strong>${escapeHtml(o.name)}</strong><div class="muted small">Outstanding ${money(o.balance)}</div></div>`).join('') : 'No balances yet.';
-}
-
-function getStudentBalance(studentId) {
-  const debit = sum(state.invoices.filter(i=>i.studentId===studentId && i.status==='Posted').map(i=>i.amount)) + sum(state.refunds.filter(r=>r.studentId===studentId && r.status==='Posted').map(r=>r.amount));
-  const credit = sum(state.payments.filter(p=>p.studentId===studentId && p.status==='Posted').map(p=>p.amount));
-  return debit - credit;
-}
-
-function renderPrivilegeGrid(selected = []) {
-  els.privilegesGrid.innerHTML = PRIVILEGES.map(p => `<label><input type="checkbox" value="${p}" ${selected.includes(p) ? 'checked' : ''}/> ${pretty(p)}</label>`).join('');
-}
-
-function applyRolePresetToForm() {
-  const map = {
-    'Administrator': ['*'],
-    'CEO': ['dashboard','reports','users','settings','finance','students'],
-    'Finance Officer': ['dashboard','finance','reports','students','communication'],
-    'Bursar': ['dashboard','finance','reports','students'],
-    'Teacher': ['dashboard','students','attendance','exams','communication','reports'],
-    'Cashier': ['dashboard','finance','students'],
-    'Approver': ['dashboard','finance','reports'],
-    'Custom': []
-  };
-  const selected = map[els.userRole.value] || [];
-  renderPrivilegeGrid(selected.includes('*') ? PRIVILEGES : selected);
-}
-
-function saveUser(e) {
-  e.preventDefault();
-  const privileges = els.userRole.value === 'Administrator' ? ['*'] : [...els.privilegesGrid.querySelectorAll('input:checked')].map(i => i.value);
-  const payload = { id: els.userId.value || uid('USR'), fullName: els.userFullName.value.trim(), username: els.userUsername.value.trim(), password: els.userPassword.value, role: els.userRole.value, status: els.userStatus.value, approvalLimit: num(els.approvalLimit.value), privileges };
-  upsert(state.auth.users, payload);
-  persist(`Saved user ${payload.fullName}`);
-  resetUserForm();
-  renderUsers();
-}
-
-function resetUserForm() { els.userForm.reset(); els.userId.value=''; els.userStatus.value='Active'; els.approvalLimit.value = 0; renderPrivilegeGrid([]); }
-
-function editUser(id) {
-  const u = byId(state.auth.users, id); if (!u) return;
-  els.userId.value=u.id; els.userFullName.value=u.fullName; els.userUsername.value=u.username; els.userPassword.value=u.password; els.userRole.value=u.role; els.userStatus.value=u.status; els.approvalLimit.value=u.approvalLimit; renderPrivilegeGrid(u.privileges.includes('*') ? PRIVILEGES : u.privileges);
-  switchSection('users');
-}
-
-function renderUsers() {
-  const q = els.userSearch.value.trim().toLowerCase();
-  const rows = state.auth.users.filter(u => [u.fullName,u.username,u.role,u.status,u.approvalLimit].join(' ').toLowerCase().includes(q));
-  els.usersTableBody.innerHTML = rows.length ? rows.map(u => `<tr><td>${escapeHtml(u.fullName)}</td><td>${escapeHtml(u.username)}</td><td>${escapeHtml(u.role)}</td><td>${statusTag(u.status)}</td><td>${money(u.approvalLimit)}</td><td><div class="action-row"><button onclick="editUser('${u.id}')">Edit</button></div></td></tr>`).join('') : `<tr><td colspan="6" class="muted">No users found.</td></tr>`;
-  els.workflowSummary.innerHTML = summaryCard('Total Users', state.auth.users.length) + summaryCard('Active Users', state.auth.users.filter(u=>u.status==='Active').length) + summaryCard('Approvers', state.auth.users.filter(u=>u.approvalLimit>0).length);
-}
-
-function seedSampleData() {
-  if (state.students.length || state.staff.length || state.invoices.length) {
-    if (!confirm('Load sample data and merge with current data?')) return;
-  }
-  const students = [
-    { id: uid('STD'), admissionNo: 'ADM/2026/001', fullName: 'Achieng Atieno', className: 'Grade 7', parentContact: '+254700100200', gender: 'Female', status: 'Active', parentName: 'Mary Achieng', notes: '' },
-    { id: uid('STD'), admissionNo: 'ADM/2026/002', fullName: 'Brian Odhiambo', className: 'Grade 7', parentContact: '+254700100201', gender: 'Male', status: 'Active', parentName: 'Peter Odhiambo', notes: '' },
-    { id: uid('STD'), admissionNo: 'ADM/2026/003', fullName: 'Cynthia Wanjiku', className: 'Grade 8', parentContact: '+254700100202', gender: 'Female', status: 'Active', parentName: 'Lucy Wanjiku', notes: '' }
+  const summaries = [
+    ['Active classes', [...new Set(state.students.map(s=>s.className).filter(Boolean))].length],
+    ['Average exam score', averageExamPercent().toFixed(2) + '%'],
+    ['Attendance rate', attendanceRate().toFixed(2) + '%'],
+    ['Messages logged', state.communications.length]
   ];
-  const staff = [
-    { id: uid('STF'), staffNo: 'STF/001', fullName: 'Jane Njeri', role: 'Teacher', department: 'Academics', phone: '+254711111111', status: 'Active' },
-    { id: uid('STF'), staffNo: 'STF/002', fullName: 'Mark Otieno', role: 'Finance Clerk', department: 'Finance', phone: '+254722222222', status: 'Active' }
+  els.dashboardSummary.innerHTML = summaries.map(([a,b])=>`<div class="list-item"><div><strong>${a}</strong><small>Current snapshot</small></div><span>${b}</span></div>`).join('');
+  const outstanding = state.students.map(s=>({name:s.name,balance:studentBalance(s.id),className:s.className})).filter(x=>x.balance>0).sort((a,b)=>b.balance-a.balance).slice(0,5);
+  els.outstandingList.innerHTML = outstanding.length ? outstanding.map(x=>`<div class="list-item"><div><strong>${escapeHtml(x.name)}</strong><small>${escapeHtml(x.className)}</small></div><span>${money(x.balance)}</span></div>`).join('') : 'No balances yet.';
+  els.activityList.innerHTML = state.activities.slice(0,8).map(a=>`<div class="list-item"><div><strong>${escapeHtml(a.title)}</strong><small>${formatDateTime(a.at)}</small></div><span>${escapeHtml(a.detail)}</span></div>`).join('') || 'No activity yet.';
+}
+
+function renderReports(){
+  els.reportBalance.textContent = money(totalOutstanding());
+  els.reportPerformance.textContent = `${averageExamPercent().toFixed(2)}%`;
+  els.reportAttendance.textContent = `${attendanceRate().toFixed(2)}%`;
+  els.reportMessages.textContent = state.communications.length;
+  els.reportBalancesTableBody.innerHTML = state.students.map(s=>{ const invoiced = postedInvoicesForStudent(s.id); const paid = postedPaymentsForStudent(s.id); return `<tr><td>${escapeHtml(s.name)}</td><td>${escapeHtml(s.className)}</td><td>${money(invoiced)}</td><td>${money(paid)}</td><td>${money(studentBalance(s.id))}</td></tr>`; }).join('') || `<tr><td colspan="5" class="muted">No report data.</td></tr>`;
+  const insights = [];
+  const topStudent = topAcademicStudent(); if(topStudent) insights.push(`<div class="list-item"><div><strong>Top academic student</strong><small>Best average score</small></div><span>${escapeHtml(topStudent.name)} · ${topStudent.avg.toFixed(2)}%</span></div>`);
+  const lowBalances = state.students.filter(s=>studentBalance(s.id)<=0).length; insights.push(`<div class="list-item"><div><strong>Cleared students</strong><small>Students with zero or credit balance</small></div><span>${lowBalances}</span></div>`);
+  insights.push(`<div class="list-item"><div><strong>Attendance records</strong><small>Total entries captured</small></div><span>${state.attendance.length}</span></div>`);
+  els.reportInsightList.innerHTML = insights.join('') || 'No report data yet.';
+}
+
+function renderAuditTrail(){ els.auditTrailList.innerHTML = state.audit.slice(0,18).map(a=>`<div class="list-item"><div><strong>${escapeHtml(a.title)}</strong><small>${formatDateTime(a.at)} · by ${escapeHtml(a.by)}</small></div><span>${escapeHtml(a.detail)}</span></div>`).join('') || 'No audit logs yet.'; }
+
+function studentName(id){ return state.students.find(s=>s.id===id)?.name || 'Unknown Student'; }
+function studentClass(id){ return state.students.find(s=>s.id===id)?.className || ''; }
+function bankName(id){ return state.banks.find(b=>b.id===id)?.name || 'Bank'; }
+function postedInvoicesForStudent(id){ return state.invoices.filter(i=>i.studentId===id && i.status==='Posted').reduce((a,b)=>a+Number(b.amount||0),0); }
+function postedPaymentsForStudent(id){ return state.payments.filter(p=>p.studentId===id && p.status==='Posted').reduce((a,b)=>a+Number(b.amount||0),0); }
+function paidRefundsForStudent(id){ return state.refunds.filter(r=>r.studentId===id && r.status==='Paid').reduce((a,b)=>a+Number(b.amount||0),0); }
+function reversedRefundsForStudent(id){ return state.refunds.filter(r=>r.studentId===id && r.status==='Reversed').reduce((a,b)=>a+Number(b.amount||0),0); }
+function studentBalance(id){ return postedInvoicesForStudent(id) - postedPaymentsForStudent(id) + paidRefundsForStudent(id) - reversedRefundsForStudent(id); }
+function studentCredit(id){ return Math.max(0, postedPaymentsForStudent(id) - postedInvoicesForStudent(id) - paidRefundsForStudent(id) + reversedRefundsForStudent(id)); }
+function totalPostedInvoices(){ return state.invoices.filter(i=>i.status==='Posted').reduce((a,b)=>a+Number(b.amount||0),0); }
+function totalPostedReceipts(){ return state.payments.filter(p=>p.status==='Posted').reduce((a,b)=>a+Number(b.amount||0),0); }
+function totalOutstanding(){ return state.students.reduce((sum,s)=>sum + Math.max(0, studentBalance(s.id)), 0); }
+function invoicePaidAmount(id){ return state.payments.filter(p=>p.invoiceId===id && p.status==='Posted').reduce((a,b)=>a+Number(b.amount||0),0); }
+function invoiceBalance(id){ const inv = state.invoices.find(i=>i.id===id); if(!inv || inv.status!=='Posted') return 0; return Number(inv.amount||0) - invoicePaidAmount(id); }
+function bankBalance(id){ const receipts = state.payments.filter(p=>p.bankId===id && p.status==='Posted').reduce((a,b)=>a+Number(b.amount||0),0); const refunds = state.refunds.filter(r=>r.bankId===id && r.status==='Paid').reduce((a,b)=>a+Number(b.amount||0),0); const reversedRefunds = state.refunds.filter(r=>r.bankId===id && r.status==='Reversed').reduce((a,b)=>a+Number(b.amount||0),0); return receipts - refunds + reversedRefunds; }
+function attendanceRate(){ if(!state.attendance.length) return 0; const presentish = state.attendance.filter(a=>a.status==='Present' || a.status==='Late').length; return (presentish / state.attendance.length) * 100; }
+function averageExamPercent(){ if(!state.exams.length) return 0; return state.exams.reduce((a,b)=>a+Number(b.percentage||0),0) / state.exams.length; }
+function topAcademicStudent(){ if(!state.exams.length) return null; const byStudent = {}; state.exams.forEach(x=>{ if(!byStudent[x.studentId]) byStudent[x.studentId] = []; byStudent[x.studentId].push(Number(x.percentage||0)); }); const ranked = Object.entries(byStudent).map(([id,arr])=>({ id, name:studentName(id), avg:arr.reduce((a,b)=>a+b,0)/arr.length })).sort((a,b)=>b.avg-a.avg); return ranked[0] || null; }
+function autoNumber(prefix, n){ return `${prefix}-${String(n).padStart(4,'0')}`; }
+function escapeHtml(v){ return String(v ?? '').replace(/[&<>'"]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[m])); }
+
+function exportBackup(){ const blob = new Blob([JSON.stringify(state,null,2)],{type:'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'edubill_pro_v6_backup.json'; a.click(); URL.revokeObjectURL(a.href); }
+function importBackup(e){ const file = e.target.files[0]; if(!file) return; const reader = new FileReader(); reader.onload = () => { try{ const data = JSON.parse(reader.result); Object.keys(defaultState).forEach(k => state[k] = data[k] ?? structuredClone(defaultState[k])); persist('Backup imported.'); syncAuthUI(); renderAll(); } catch { showToast('Invalid backup file.'); } }; reader.readAsText(file); e.target.value=''; }
+function resetAll(){ if(!confirm('Reset all demo data?')) return; const fresh = structuredClone(defaultState); Object.keys(fresh).forEach(k=> state[k] = fresh[k]); localStorage.removeItem(STORAGE_KEY); setTodayDefaults(); syncAuthUI(); renderPrivilegeMatrix(); showToast('System reset.'); }
+
+function loadSampleData(){
+  if(!confirm('Load sample school data?')) return;
+  state.students = [
+    { id:'STD1', admissionNo:'ADM/2026/001', name:'Achieng Atieno', className:'Grade 7', parent:'Mary Atieno', phone:'+254700111111', status:'Active', notes:'', createdAt:new Date().toISOString(), updatedAt:new Date().toISOString() },
+    { id:'STD2', admissionNo:'ADM/2026/002', name:'Brian Otieno', className:'Grade 7', parent:'James Otieno', phone:'+254700222222', status:'Active', notes:'', createdAt:new Date().toISOString(), updatedAt:new Date().toISOString() },
+    { id:'STD3', admissionNo:'ADM/2026/003', name:'Cynthia Auma', className:'Grade 8', parent:'Agnes Auma', phone:'+254700333333', status:'Active', notes:'', createdAt:new Date().toISOString(), updatedAt:new Date().toISOString() }
   ];
-  const bank = { id: uid('BNK'), name: 'KCB Bank', accountNo: '1234567890', openingBalance: 50000 };
-  state.students.push(...students);
-  state.staff.push(...staff);
-  state.banks.push(bank);
-  state.attendance.push(
-    { id: uid('ATT'), date: todayIso(), className: 'Grade 7', studentId: students[0].id, studentName: students[0].fullName, status: 'Present', remarks: '' },
-    { id: uid('ATT'), date: todayIso(), className: 'Grade 7', studentId: students[1].id, studentName: students[1].fullName, status: 'Late', remarks: 'Traffic' },
-    { id: uid('ATT'), date: todayIso(), className: 'Grade 8', studentId: students[2].id, studentName: students[2].fullName, status: 'Present', remarks: '' }
-  );
-  const inv1 = { id: uid('INV'), studentId: students[0].id, studentName: students[0].fullName, invoiceNo: 'INV-001', description: 'Tuition Fees', amount: 25000, dueDate: todayIso(), status: 'Posted', createdAt: todayIso() };
-  const inv2 = { id: uid('INV'), studentId: students[1].id, studentName: students[1].fullName, invoiceNo: 'INV-002', description: 'Tuition Fees', amount: 25000, dueDate: todayIso(), status: 'Posted', createdAt: todayIso() };
-  const rcp1 = { id: uid('RCP'), studentId: students[0].id, studentName: students[0].fullName, bankId: bank.id, bankName: bank.name, receiptNo: 'RCP-001', amount: 15000, date: todayIso(), reference: 'MPESA123', status: 'Posted' };
-  const rfd1 = { id: uid('RFD'), studentId: students[0].id, studentName: students[0].fullName, bankId: bank.id, bankName: bank.name, refundNo: 'RFD-001', amount: 1000, date: todayIso(), reason: 'Overpayment adjustment', status: 'Approved' };
-  state.invoices.push(inv1, inv2);
-  state.payments.push(rcp1);
-  state.refunds.push(rfd1);
-  state.exams.push(
-    { id: uid('EXM'), studentId: students[0].id, studentName: students[0].fullName, className: 'Grade 7', term: 'Term 1 2026', subject: 'Mathematics', catMark: 32, examMark: 54, total: 86, grade: 'A', date: todayIso() },
-    { id: uid('EXM'), studentId: students[1].id, studentName: students[1].fullName, className: 'Grade 7', term: 'Term 1 2026', subject: 'English', catMark: 28, examMark: 41, total: 69, grade: 'B', date: todayIso() }
-  );
-  state.messages.push({ id: uid('MSG'), date: todayIso(), type: 'Fees Reminder', audience: 'Finance Defaulters', body: 'Kindly clear fee balance by Friday. Thank you.', createdBy: 'System Administrator' });
-  persist('Loaded sample school data');
-  populateSelectors();
+  state.staff = [
+    { id:'ST1', staffNo:'STF001', name:'Peter Oloo', role:'Principal', department:'Administration', phone:'+254711000001', status:'Active' },
+    { id:'ST2', staffNo:'STF002', name:'Jane Anyango', role:'Teacher', department:'Academics', phone:'+254711000002', status:'Active' },
+    { id:'ST3', staffNo:'STF003', name:'Mercy Adhiambo', role:'Bursar', department:'Finance', phone:'+254711000003', status:'Active' }
+  ];
+  state.banks = [
+    { id:'BNK1', name:'KCB Main Account', accountNo:'00123456789', branch:'Bondo', status:'Active' },
+    { id:'BNK2', name:'Equity Collection Account', accountNo:'9988776655', branch:'Bondo', status:'Active' }
+  ];
+  state.invoices = [
+    { id:'INV1', number:'INV-0001', date:new Date().toISOString().slice(0,10), studentId:'STD1', term:'Term 1 2026', amount:12000, description:'School fees', status:'Posted', createdBy:'finance', postedBy:'finance', postedAt:new Date().toISOString() },
+    { id:'INV2', number:'INV-0002', date:new Date().toISOString().slice(0,10), studentId:'STD2', term:'Term 1 2026', amount:15000, description:'School fees', status:'Posted', createdBy:'finance', postedBy:'finance', postedAt:new Date().toISOString() },
+    { id:'INV3', number:'INV-0003', date:new Date().toISOString().slice(0,10), studentId:'STD3', term:'Term 1 2026', amount:14000, description:'School fees', status:'Draft', createdBy:'finance' }
+  ];
+  state.payments = [
+    { id:'PAY1', number:'RCPT-0001', date:new Date().toISOString().slice(0,10), studentId:'STD1', invoiceId:'INV1', bankId:'BNK1', amount:7000, method:'Bank', status:'Posted', createdBy:'finance', postedBy:'finance', postedAt:new Date().toISOString() },
+    { id:'PAY2', number:'RCPT-0002', date:new Date().toISOString().slice(0,10), studentId:'STD2', invoiceId:'INV2', bankId:'BNK2', amount:15000, method:'M-Pesa', status:'Posted', createdBy:'finance', postedBy:'finance', postedAt:new Date().toISOString() }
+  ];
+  state.refunds = [
+    { id:'REF1', number:'RFD-0001', date:new Date().toISOString().slice(0,10), studentId:'STD2', bankId:'BNK2', amount:1000, reason:'Overpayment', status:'Draft', createdBy:'finance' }
+  ];
+  state.attendance = [
+    { id:'ATT1', date:new Date().toISOString().slice(0,10), studentId:'STD1', status:'Present', remarks:'', by:'teacher' },
+    { id:'ATT2', date:new Date().toISOString().slice(0,10), studentId:'STD2', status:'Late', remarks:'Traffic', by:'teacher' },
+    { id:'ATT3', date:new Date().toISOString().slice(0,10), studentId:'STD3', status:'Absent', remarks:'Sick', by:'teacher' }
+  ];
+  state.exams = [
+    { id:'EX1', date:new Date().toISOString().slice(0,10), studentId:'STD1', subject:'Mathematics', assessment:'CAT', marks:84, outOf:100, percentage:84, grade:'A' },
+    { id:'EX2', date:new Date().toISOString().slice(0,10), studentId:'STD2', subject:'English', assessment:'CAT', marks:72, outOf:100, percentage:72, grade:'B' },
+    { id:'EX3', date:new Date().toISOString().slice(0,10), studentId:'STD3', subject:'Science', assessment:'CAT', marks:61, outOf:100, percentage:61, grade:'C' }
+  ];
+  state.communications = [
+    { id:'COM1', type:'Announcement', audience:'All', title:'Parents Meeting', message:'Parents meeting on Friday at 9:00 AM.', by:'admin', at:new Date().toISOString() },
+    { id:'SMS1', type:'SMS', audience:'All students', title:'Fees Reminder', message:'Kindly clear outstanding balances.', by:'finance', at:new Date().toISOString() }
+  ];
+  state.activities = []; state.audit = [];
+  addAudit('Sample data loaded', 'Demo school data loaded.');
+  logActivity('Sample data', 'System populated with demo school data.');
+  persist('Sample data loaded.');
   renderAll();
 }
-
-function exportBackup() {
-  const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
-  downloadBlob(blob, 'edubill_school_erp_v6_backup.json');
-}
-
-function importBackup(e) {
-  const file = e.target.files?.[0]; if (!file) return;
-  const reader = new FileReader();
-  reader.onload = () => {
-    try {
-      const imported = JSON.parse(reader.result);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(imported));
-      location.reload();
-    } catch {
-      alert('Invalid backup file.');
-    }
-  };
-  reader.readAsText(file);
-}
-
-function exportCSV(type) {
-  let rows = [];
-  if (type === 'students') rows = state.students.map(s => ({ admissionNo: s.admissionNo, fullName: s.fullName, className: s.className, parentContact: s.parentContact, status: s.status }));
-  if (type === 'finance') rows = [
-    ...state.invoices.map(i => ({ type: 'Invoice', ref: i.invoiceNo, student: i.studentName, amount: i.amount, status: i.status, date: i.dueDate })),
-    ...state.payments.map(p => ({ type: 'Receipt', ref: p.receiptNo, student: p.studentName, amount: p.amount, status: p.status, date: p.date })),
-    ...state.refunds.map(r => ({ type: 'Refund', ref: r.refundNo, student: r.studentName, amount: r.amount, status: r.status, date: r.date }))
-  ];
-  if (type === 'results') rows = state.exams.map(r => ({ student: r.studentName, className: r.className, term: r.term, subject: r.subject, total: r.total, grade: r.grade }));
-  if (!rows.length) return alert('No data available for export.');
-  const headers = Object.keys(rows[0]);
-  const csv = [headers.join(','), ...rows.map(r => headers.map(h => csvSafe(r[h])).join(','))].join('\n');
-  downloadBlob(new Blob([csv], { type: 'text/csv;charset=utf-8;' }), `${type}_export.csv`);
-}
-
-function byId(list, id) { return list.find(item => item.id === id); }
-function upsert(list, payload) { const i = list.findIndex(x => x.id === payload.id); i >= 0 ? list.splice(i, 1, payload) : list.push(payload); }
-function money(v) { return `${state.settings.currency || 'KES'} ${Number(v || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`; }
-function num(v) { return Number(v || 0); }
-function sum(arr) { return arr.reduce((a,b)=>a + Number(b || 0), 0); }
-function uid(prefix) { return `${prefix}-${Math.random().toString(36).slice(2,8)}${Date.now().toString(36).slice(-4)}`; }
-function todayIso() { return new Date().toISOString().slice(0,10); }
-function summaryCard(label, value) { return `<div><div class="muted small">${label}</div><strong>${value}</strong></div>`; }
-function pretty(v) { return v.replace(/(^|\b)([a-z])/g, s => s.toUpperCase()); }
-function gradeFor(total) { if (total >= 80) return 'A'; if (total >= 70) return 'B'; if (total >= 60) return 'C'; if (total >= 50) return 'D'; return 'E'; }
-function statusTag(value) {
-  const str = String(value || '');
-  const lower = str.toLowerCase();
-  const cls = lower.includes('post') || lower.includes('active') || lower === 'present' || lower === 'a' ? 'green' : lower.includes('draft') || lower.includes('late') || lower === 'b' || lower === 'c' ? 'blue' : lower.includes('approve') || lower.includes('due') || lower.includes('transferred') ? 'amber' : 'red';
-  return `<span class="tag ${cls}">${escapeHtml(str)}</span>`;
-}
-function escapeHtml(value) { return String(value ?? '').replace(/[&<>"']/g, s => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[s])); }
-function csvSafe(value) { const s = String(value ?? '').replace(/"/g, '""'); return /[",\n]/.test(s) ? `"${s}"` : s; }
-function downloadBlob(blob, filename) { const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = filename; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url); }
-
-window.editStudent = editStudent;
-window.editStaff = editStaff;
-window.editUser = editUser;
-window.postFinance = postFinance;
-window.reverseFinance = reverseFinance;
-window.approveRefund = approveRefund;

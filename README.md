@@ -1,30 +1,31 @@
-EduBill School ERP v6
-=====================
+# EduBill Pro v6 - Full School System
 
-A simple web-based school management demo with:
-- Student registration and promotion
-- Attendance marking and summary
-- Fees workflow: banks, invoices, receipts, refunds, reversals
-- Student ledger and clearance status
-- Exams and automatic grades
-- Staff records
-- Communication centre
-- Reports and audit trail
-- Admin user creation, roles and privileges
+This is a web-based demo school management system built as a front-end prototype.
 
-How to use
-----------
-1. Extract the zip.
-2. Open school_management_v6/index.html in your browser.
-3. Login using one of the demo accounts:
-   - admin / admin123
-   - ceo / ceo123
-   - finance / finance123
-   - teacher / teacher123
-4. Click "Load Sample Data" for ready demo content.
+## Main modules
+- Dashboard
+- Students Records
+- Attendance
+- Finance: banks, invoices, receipts, refunds, reversals
+- Exams & Results
+- Staff Records
+- Communication: announcements and SMS log
+- Reports
+- Users, roles, privileges and approval limits
+- Settings and audit trail
 
-Notes
------
+## Demo logins
+- admin / admin123
+- ceo / ceo123
+- finance / finance123
+- teacher / teacher123
+
+## Notes
 - Data is stored in browser localStorage.
-- Export backup and CSV are included.
-- This is a front-end demo ready for later upgrade to PHP/MySQL, Node.js, or Supabase.
+- Use **Load Sample Data** after login to populate demo records.
+- Use **Export Backup** and **Import Backup** for portability.
+
+## Files
+- index.html
+- styles.css
+- app.js
